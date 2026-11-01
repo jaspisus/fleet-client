@@ -33,6 +33,13 @@ test.describe('visual regression', () => {
     await expect(page).toHaveScreenshot('edit-dialog.png')
   })
 
+  test('vehicle details dialog', async ({ page }) => {
+    await page.goto('/vehicles/vehicle-sprinter-01')
+    await expect(page.getByRole('dialog').getByLabel('Nazwa')).toBeDisabled()
+
+    await expect(page).toHaveScreenshot('vehicle-details.png')
+  })
+
   test('edit dialog with validation errors', async ({ page }) => {
     await page.goto('/vehicles/vehicle-sprinter-01/edit')
     const dialog = page.getByRole('dialog')

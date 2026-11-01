@@ -3,6 +3,7 @@
 A small app for a vehicle fleet dispatcher, working against the Fleet API (REST + SignalR):
 
 - **Vehicles** – a sortable, searchable table of every vehicle. Editing happens in a modal dialog.
+  On phones, tapping a compact card opens the same dialog read-only, with Edit in its header.
 - **Live map** – a list of vehicles next to a MapLibre map where they move live (SignalR). The list
   and the map share one selected vehicle.
 
@@ -44,7 +45,7 @@ The first Playwright run needs a browser: `npx playwright install chromium`.
 ## Tests
 
 **Unit and component tests (Vitest + Testing Library, jsdom)** live next to the code (`*.test.ts(x)`):
-221 tests, about 92% statement coverage. They cover:
+229 tests, about 92% statement coverage. They cover:
 
 - pure logic: validation rules, mapping API messages, status, interpolation, URL state, formatting;
 - every component's states, assertions written the way a user sees the UI (roles, labels, Polish copy);
@@ -52,7 +53,8 @@ The first Playwright run needs a browser: `npx playwright install chromium`.
 - motion that gates behaviour: the dialog and toasts close only after their exit animation, and
   the map list keeps a card's details until it has collapsed (jsdom runs no animations, so tests
   hold one open by hand);
-- integration through the real route tree (`src/app/test/renderApp.tsx`).
+- integration through the real route tree (`src/app/test/renderApp.tsx`), including the vehicle
+  dialog switching between details and edit without closing.
 
 The network is faked at the `fetch` level (`src/shared/test/fetchStub.ts`), so the real API client
 and error parsing run in every test. SignalR is replaced by a fake hub connection that tests drive
@@ -80,10 +82,11 @@ The clock is fixed and reduced motion is on, so runs are deterministic and scree
   - the list's details expanding into view and collapsing on a click;
   - "Show on map";
   - the language persisting across reloads;
-  - the mobile reduced mode: every column on a card, editing, "Show on map" and the map list.
+  - the mobile reduced mode: compact cards with a truncated name, details from a tapped card, edit
+    and back (also with the browser's Back), "Show on map" and the map list.
 - **Visual specs** (`*.visual.ts`) cover:
   - the table, plus its empty and error states;
-  - the edit dialog, plus a version with errors;
+  - the edit dialog, plus a version with errors, and the read-only details dialog;
   - the map with a selection;
   - one English check.
 
@@ -116,8 +119,9 @@ src/
   their own loading, error (with Retry) and empty states.
 - **Table state in the URL** (`?q=…&sort=-name`): it survives the dialog, reloads and shared links.
   Search ignores case, spaces and Polish diacritics.
-- **Edit dialog driven by the route** (`/vehicles/$id/edit`), built on the native `<dialog>` for the
-  focus trap and Esc. It does not close on a backdrop click or while saving. It fades and slides in
+- **Vehicle dialog driven by the route**: `/vehicles/$id` shows details (the form locked),
+  `/vehicles/$id/edit` edits. Switching modes keeps the dialog open; Save and Cancel after Edit from
+  details go back to details. Built on the native `<dialog>` for the focus trap and Esc. It does not close on a backdrop click or while saving. It fades and slides in
   and out (not with reduced motion); the route changes only after the exit animation. Toasts
   animate the same way.
 - **Validation mirrors the API**: the same rules, including a unique plate and a model that belongs
@@ -137,8 +141,8 @@ src/
   `shared/i18n/languages.ts`. The switcher is a custom, keyboard-accessible dropdown with flags, so
   it scales past two languages.
 - **CSS Modules + design tokens** (`src/app/styles/tokens.css`), kept basic for a later restyle.
-- **Mobile below 768 px is a reduced mode**: vehicle cards with every detail, Edit and "Show on
-  map", a full-screen form, and the map with a compact list. No sorting or detail panels.
+- **Mobile below 768 px is a reduced mode**: compact, tappable vehicle cards (name, plate,
+  driver) with "Show on map" next to the name, a full-screen dialog, and the map with a compact list. No sorting or detail panels.
 - **Accessibility basics**: landmarks, labelled fields with linked error messages, `aria-sort`,
   and live regions for status, counts and toasts.
 

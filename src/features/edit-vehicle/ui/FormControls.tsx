@@ -15,7 +15,7 @@ interface FormControlProps {
 }
 
 type FormTextControlProps = FormControlProps &
-  Pick<ComponentProps<'input'>, 'inputMode' | 'autoComplete' | 'maxLength'>
+  Pick<ComponentProps<'input'>, 'inputMode' | 'autoComplete' | 'maxLength' | 'autoFocus'>
 
 export const FormTextControl = ({
   id,
@@ -28,6 +28,7 @@ export const FormTextControl = ({
   inputMode,
   autoComplete = 'off',
   maxLength,
+  autoFocus,
 }: FormTextControlProps) => (
   <Field id={id} label={label} error={error}>
     <TextInput
@@ -37,6 +38,7 @@ export const FormTextControl = ({
       inputMode={inputMode}
       autoComplete={autoComplete}
       maxLength={maxLength}
+      autoFocus={autoFocus}
       disabled={disabled}
       invalid={error !== undefined}
       aria-describedby={error ? fieldErrorId(id) : undefined}

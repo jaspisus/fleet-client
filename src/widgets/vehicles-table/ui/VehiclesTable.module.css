@@ -56,6 +56,28 @@
   gap: var(--space-2);
 }
 
+.rowActions .editAction {
+  display: none;
+}
+
+/* Stretched over the card (positioned against .row); its focus ring outlines the whole card. */
+.cardLink {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+/*
+ * Stays above the card link, so it does not open details. On cards, negative margins cancel the
+ * button's own padding, so its text lines up with the card content and the row is no taller
+ * than the name.
+ */
+.mapAction {
+  position: relative;
+  z-index: 1;
+  margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-3)) calc(-1 * var(--space-1)) 0;
+}
+
 /* Both arrows are always drawn; the one matching the sort direction is highlighted. */
 .sortIndicator {
   flex: none;
@@ -90,8 +112,9 @@
 }
 
 /*
- * Mobile first: every row is a card with all details and actions, but no sorting.
- * The header row is hidden; each cell shows its column name from data-label instead.
+ * Mobile first: every row is a compact card with the name, registration, driver and "On map", but
+ * no sorting; tapping the card opens details with the rest. The header row is hidden; each cell shows its column name
+ * from data-label instead.
  */
 .table,
 .table tbody,
@@ -115,16 +138,24 @@
   gap: var(--space-3);
 }
 
-/* Dense flow pulls the year up next to the registration, beside the full-width make and model. */
 .row {
+  position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-flow: row dense;
+  /* The header row is the name, truncated before "On map". */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name name actions'
+    'plate driver driver';
+  align-items: center;
   gap: var(--space-2) var(--space-4);
-  padding: var(--space-4);
+  padding: var(--space-3) var(--space-4) var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+}
+
+.row:has(.cardLink:hover) {
+  background: var(--color-surface-hover);
 }
 
 .cell {
@@ -141,12 +172,26 @@
 }
 
 .cell[data-column='name'] {
-  grid-column: 1 / -1;
+  grid-area: name;
   font-size: var(--font-size-md);
 }
 
-.cell[data-column='makeModel'] {
-  grid-column: 1 / -1;
+.cell[data-column='registrationNumber'] {
+  grid-area: plate;
+}
+
+.cell[data-column='driver'] {
+  grid-area: driver;
+}
+
+.cell:is(
+  [data-column='makeModel'],
+  [data-column='yearOfManufacture'],
+  [data-column='type'],
+  [data-column='fuelType'],
+  [data-column='fleet']
+) {
+  display: none;
 }
 
 .cell[data-column='name']::before,
@@ -155,7 +200,7 @@
 }
 
 .cell[data-column='actions'] {
-  grid-column: 1 / -1;
+  grid-area: actions;
 }
 
 /* Tablets and up: the full table, scrolling sideways until it fits (1024px+). */
@@ -203,8 +248,9 @@
     background: var(--color-surface-hover);
   }
 
+  /* .table raises the specificity above the card rule that hides columns. */
   .table th,
-  .cell {
+  .table .cell {
     display: table-cell;
     padding: var(--space-3) var(--space-4);
     border-bottom: 1px solid var(--color-border);
@@ -288,6 +334,22 @@
 
   .rowActions {
     justify-content: flex-end;
+  }
+
+  .row {
+    position: static;
+  }
+
+  .cardLink {
+    display: none;
+  }
+
+  .mapAction {
+    margin: 0;
+  }
+
+  .rowActions .editAction {
+    display: inline-flex;
   }
 }
 

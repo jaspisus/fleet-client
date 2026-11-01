@@ -46,11 +46,20 @@ const VehicleRowActions = ({ vehicle }: { vehicle: Vehicle }) => {
 
   return (
     <div className={styles.rowActions}>
+      {/* On cards this link covers the whole card, so a tap anywhere opens details; the table
+          shows Edit instead. CSS hides the one that does not apply. */}
+      <Link
+        to="/vehicles/$vehicleId"
+        params={{ vehicleId: vehicle.id }}
+        search={true}
+        className={styles.cardLink}
+        aria-label={t('vehicles.actions.detailsLabel', { name: vehicle.name })}
+      />
       <Link
         to="/vehicles/$vehicleId/edit"
         params={{ vehicleId: vehicle.id }}
         search={true}
-        className={buttonClassName({ size: 'sm' })}
+        className={buttonClassName({ size: 'sm', className: styles.editAction })}
         aria-label={t('vehicles.actions.editLabel', { name: vehicle.name })}
       >
         {t('vehicles.actions.edit')}
@@ -58,6 +67,7 @@ const VehicleRowActions = ({ vehicle }: { vehicle: Vehicle }) => {
       <Button
         size="sm"
         variant="ghost"
+        className={styles.mapAction}
         onClick={showOnMap}
         aria-label={t('vehicles.actions.showOnMapLabel', { name: vehicle.name })}
       >
@@ -105,8 +115,8 @@ interface VehiclesTableProps {
 }
 
 /**
- * The vehicle list with search and sorting. Below 768px rows turn into cards with every detail
- * and action but no sorting; explicit ARIA roles keep the table semantics when CSS changes the
+ * The vehicle list with search and sorting. Below 768px rows turn into compact cards (name,
+ * registration, driver) without sorting; tapping a card opens the vehicle read-only; explicit ARIA roles keep the table semantics when CSS changes the
  * `display` of table elements.
  */
 export const VehiclesTable = ({ query, sort, onQueryChange, onSortChange }: VehiclesTableProps) => {

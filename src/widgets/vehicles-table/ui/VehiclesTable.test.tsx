@@ -142,6 +142,15 @@ describe('VehiclesTable', () => {
     expect(edit).toHaveAttribute('href', `/vehicles/${sprinter01.id}/edit?q=sprinter`)
   })
 
+  it('links each card to the vehicle details, keeping the search', async () => {
+    stubApi()
+    renderWithProviders(<Harness initialQuery="sprinter" />, { path: '/vehicles?q=sprinter' })
+
+    const details = await screen.findByRole('link', { name: 'Szczegóły pojazdu Sprinter 01' })
+
+    expect(details).toHaveAttribute('href', `/vehicles/${sprinter01.id}?q=sprinter`)
+  })
+
   it('shows a vehicle on the map', async () => {
     stubApi()
     const { user, router } = renderWithProviders(<Harness />, { path: '/vehicles' })

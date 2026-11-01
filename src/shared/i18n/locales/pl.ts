@@ -62,6 +62,7 @@ export const pl = {
     actions: {
       edit: 'Edytuj',
       editLabel: 'Edytuj pojazd {{name}}',
+      detailsLabel: 'Szczegóły pojazdu {{name}}',
       showOnMap: 'Na mapie',
       showOnMapLabel: 'Pokaż pojazd {{name}} na mapie',
     },
@@ -83,6 +84,7 @@ export const pl = {
   },
   editVehicle: {
     title: 'Edycja pojazdu',
+    detailsTitle: 'Szczegóły pojazdu',
     loadError: 'Nie udało się wczytać danych pojazdu.',
     notFound: 'Nie znaleziono pojazdu. Mógł zostać usunięty.',
     selectPlaceholder: 'Wybierz…',

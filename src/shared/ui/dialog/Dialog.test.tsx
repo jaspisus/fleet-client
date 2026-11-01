@@ -30,6 +30,17 @@ describe('Dialog', () => {
     expect(dialog).toHaveTextContent('Content')
   })
 
+  it('puts extra header actions before the close button', () => {
+    render(
+      <Dialog title="Vehicle" onClose={vi.fn()} actions={<button type="button">Edytuj</button>}>
+        Content
+      </Dialog>,
+    )
+
+    const buttons = screen.getAllByRole('button').map((button) => button.textContent)
+    expect(buttons).toEqual(['Edytuj', '×'])
+  })
+
   it('asks the parent to close on Esc', () => {
     const onClose = vi.fn()
     render(

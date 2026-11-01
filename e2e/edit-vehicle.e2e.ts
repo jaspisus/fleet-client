@@ -8,7 +8,7 @@ test.describe('edit vehicle', () => {
     const editLink = page.getByRole('link', { name: 'Edytuj pojazd Sprinter 01' })
     await editLink.click()
 
-    const dialog = page.getByRole('dialog', { name: 'Edycja pojazdu: Sprinter 01' })
+    const dialog = page.getByRole('dialog', { name: 'Sprinter 01' })
     await expect(dialog).toBeVisible()
     await expect(page).toHaveURL(`${EDIT_SPRINTER}?q=sprinter`)
 
@@ -63,7 +63,7 @@ test.describe('edit vehicle', () => {
   test('opens from a deep link', async ({ page }) => {
     await page.goto(EDIT_SPRINTER)
 
-    await expect(page.getByRole('dialog', { name: 'Edycja pojazdu: Sprinter 01' })).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Sprinter 01' })).toBeVisible()
     await expect(page.getByRole('table')).toBeAttached()
   })
 

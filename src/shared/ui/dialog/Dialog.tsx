@@ -9,6 +9,8 @@ interface DialogProps {
   onClose: () => void
   /** While true (e.g. during a save), Esc and the close button do nothing. */
   closeDisabled?: boolean
+  /** Extra header controls, placed before the close button. */
+  actions?: ReactNode
   children: ReactNode
 }
 
@@ -18,7 +20,13 @@ interface DialogProps {
  * which usually navigates away. Clicking the backdrop does not close it, so edits are not lost.
  * Esc, the close button and `useCloseDialog()` play the exit animation before calling `onClose`.
  */
-export const Dialog = ({ title, onClose, closeDisabled = false, children }: DialogProps) => {
+export const Dialog = ({
+  title,
+  onClose,
+  closeDisabled = false,
+  actions,
+  children,
+}: DialogProps) => {
   const { t } = useTranslation()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const titleId = useId()
@@ -72,15 +80,18 @@ export const Dialog = ({ title, onClose, closeDisabled = false, children }: Dial
         <h2 id={titleId} className={styles.title}>
           {title}
         </h2>
-        <button
-          type="button"
-          className={styles.close}
-          onClick={requestClose}
-          disabled={closeDisabled}
-          aria-label={t('common.close')}
-        >
-          <span aria-hidden="true">×</span>
-        </button>
+        <div className={styles.headerActions}>
+          {actions}
+          <button
+            type="button"
+            className={styles.close}
+            onClick={requestClose}
+            disabled={closeDisabled}
+            aria-label={t('common.close')}
+          >
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
       </div>
       <div className={styles.body}>
         <DialogCloseContext value={requestClose}>{children}</DialogCloseContext>

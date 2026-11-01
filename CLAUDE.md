@@ -40,7 +40,8 @@ npm run test:visual:update                               # re-record baselines a
 **Routing** (TanStack Router, code-based, `src/app/router/routes.tsx`):
 - Route wrapper components pass params and search to pages as props; pages do not import routes.
 - Loaders only *start* fetching (`void queryClient.prefetchQuery(...)`). Pages use `useQuery` and render their own loading, error and empty states.
-- The edit dialog is a child route of `/vehicles` (`$vehicleId/edit`), rendered through `<Outlet/>` over the table.
+- The vehicle dialog is the `/vehicles/$vehicleId` route, rendered through `<Outlet/>` over the table. Its children only pick the mode: index = details (read-only), `edit` = edit. The parent route renders the dialog, so switching modes does not remount or re-animate it.
+- Edit from details pushes `/edit`; Save and Cancel then call `history.back()`. Edit opened directly (table, deep link) closes the dialog. The route component decides this from the mode at mount.
 - Table search and sort live in validated search params.
 - `/map` is a lazy chunk because MapLibre is large.
 
@@ -67,9 +68,10 @@ npm run test:visual:update                               # re-record baselines a
 **Edit form** (`features/edit-vehicle`, TanStack Form):
 - Validation is one form-level `onDynamic` validator (`validateVehicleForm`) with `revalidateLogic({ mode: 'submit', modeAfterSubmission: 'change' })`. Do not switch to blur validation: errors appearing on blur moved the Save button away mid-click.
 - Validators return translation keys. `serverErrors.ts` maps the API's English messages (all listed in API.md) to the same keys.
+- `readOnly` disables the fieldset and hides Save/Cancel; the details dialog uses it. The form is keyed by mode, so leaving edit discards changes. After a mode switch, focus moves to the new content (name field or the header Edit button), because the focused button was removed.
 - Saving uses `mutate(..., { onSuccess, onError })`, so a dialog closed mid-save never navigates. Cache updates and the toast live in the `useMutation` options.
 
-**Dialog** (`shared/ui/dialog`): built on the native `<dialog>` + `showModal()`. Its `close` handler ignores events that arrive while the dialog is open again (StrictMode remount). Esc, the close button and `useCloseDialog()` (for content such as Save/Cancel) set `data-closing`, wait for the dialog's own animations (`afterOwnAnimations` in `shared/lib`; not its subtree: a spinner never finishes), then call `onClose`; calling the parent's `onClose` directly skips the exit animation. Durations are the `--transition-enter/exit` tokens, 0 ms with reduced motion. While open, it sets `scrollbar-gutter: stable` on `<html>` if the page had a scrollbar, because the scroll lock in `global.css` would otherwise shift the page.
+**Dialog** (`shared/ui/dialog`): built on the native `<dialog>` + `showModal()`. Its `close` handler ignores events that arrive while the dialog is open again (StrictMode remount). `actions` adds header controls before ×. Esc, the close button and `useCloseDialog()` (for content such as Save/Cancel) set `data-closing`, wait for the dialog's own animations (`afterOwnAnimations` in `shared/lib`; not its subtree: a spinner never finishes), then call `onClose`; calling the parent's `onClose` directly skips the exit animation. Durations are the `--transition-enter/exit` tokens, 0 ms with reduced motion. While open, it sets `scrollbar-gutter: stable` on `<html>` if the page had a scrollbar, because the scroll lock in `global.css` would otherwise shift the page.
 
 **Toasts** (`shared/ui/toast`) use the same motion: the timeout and the × button set `data-closing` on the toast and call the store's `dismiss` only after `afterOwnAnimations`; calling `dismiss` directly skips the exit animation.
 
@@ -89,7 +91,7 @@ npm run test:visual:update                               # re-record baselines a
 - CSS Modules, with design tokens in `src/app/styles/tokens.css`. The app is dark only.
 - Scrollbars are styled once in `global.css` (thin, `--color-scrollbar-thumb` on a transparent track); don't add per-component scrollbar styles.
 - Breakpoints are mobile first: 768 / 1024 / 1280 / 1536 px; the container is capped at 2560 px.
-- Below 768 px is a reduced mode: vehicle cards with every column, Edit and "Show on map", but no sorting; compact map list. Card layout is CSS only (`grid-auto-flow: dense` in `VehiclesTable.module.css`), so every column a table row has also shows on the card.
+- Below 768 px is a reduced mode: compact vehicle cards (name, plate, driver) that open details on tap, "Show on map" in the card's header row, no sorting; compact map list. Card layout is CSS only (`VehiclesTable.module.css`, grid areas): cards hide the other columns, and the name truncates before "Show on map". Rows render both a details link and Edit; on cards the details link (`.cardLink`) is stretched over the whole card (`.row` is `position: relative`) and "Show on map" sits above it (`z-index`); in the table only Edit shows. The desktop `.table .cell` selector is more specific on purpose, to undo the card hiding.
 - Long API text in table cells and the map list goes through `TruncatedText` (`shared/ui`; ellipsis + `title`). The table's per-column `max-width` caps (in `ch`) are in `VehiclesTable.module.css`; on cards and in the map list the container width is the limit (the list's plate also has a 12ch cap).
 
 ## Testing conventions
