@@ -92,7 +92,6 @@
   font-weight: var(--font-weight-medium);
 }
 
-/* Check mark next to the current language. */
 .option[aria-selected='true']::after {
   content: '';
   position: absolute;

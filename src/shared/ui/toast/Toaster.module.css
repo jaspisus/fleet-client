@@ -26,12 +26,10 @@
   background: var(--color-surface-raised);
   box-shadow: var(--shadow-md);
   pointer-events: auto;
-  /* Where the toast slides in from and out to. */
   --toast-offset: translateY(24px);
   animation: toast-in var(--transition-enter) both;
 }
 
-/* Set by the component while the exit animation plays; it leaves the store afterwards. */
 .toast[data-closing] {
   animation: toast-out var(--transition-exit) both;
   pointer-events: none;

@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+# Runs the full check suite against the staged snapshot only, so unstaged edits cannot make it pass or fail.
+set -eu
+
+root=$(git rev-parse --show-toplevel)
+dir=$(mktemp -d "${TMPDIR:-/tmp}/fleet-pre-commit.XXXXXX")
+
+git checkout-index -a --prefix="$dir/"
+
+# node_modules is linked entry by entry: tsc and Vite keep caches in node_modules/.tmp and .vite,
+# which must not be shared with the main checkout.
+mkdir "$dir/node_modules"
+for entry in "$root"/node_modules/* "$root"/node_modules/.bin "$root"/node_modules/.package-lock.json; do
+  [ -e "$entry" ] && ln -s "$entry" "$dir/node_modules/"
+done
+
+echo "pre-commit: checking the staged snapshot in $dir"
+if (cd "$dir" && CI=1 npm run check); then
+  rm -rf "$dir"
+else
+  echo "pre-commit: checks failed; reports are kept in $dir (skip once with git commit --no-verify)" >&2
+  exit 1
+fi

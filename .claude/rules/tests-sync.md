@@ -19,7 +19,7 @@ update them, for example:
 When the user writes "update tests" (or otherwise says the feature is done):
 1. Update and add Vitest and Playwright tests for everything changed since the last test update.
 2. Run `npm run test:run`, `npm run test:e2e` and `npm run test:visual`.
-3. If the UI changed, re-record baselines with `npx playwright test --project="visual-*" --update-snapshots=all`.
+3. If the UI changed, re-record baselines with `npm run test:visual:update` (Docker, `--update-snapshots=all`).
    Plain `--update-snapshots` rewrites only failing baselines, and small changes stay under the
    diff tolerance.
 4. Update the README test summary (test count, coverage, what the specs cover). `docs-sync.md`

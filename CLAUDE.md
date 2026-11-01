@@ -20,13 +20,16 @@ npm run test:coverage                                    # thresholds in vite.co
 
 npm run test:e2e                                         # Playwright functional: projects e2e-desktop (1440) and e2e-mobile (390)
 npx playwright test --project=e2e-desktop e2e/edit-vehicle.e2e.ts -g "deep link"
-npm run test:visual                                      # projects visual-390 … visual-2560
-npm run test:visual:update                               # re-record baselines after an intended UI change
+npm run test:visual                                      # projects visual-390 … visual-2560, in Docker (must be running)
+npm run test:visual:update                               # re-record all baselines after an intended UI change
+npm run check                                            # lint, format:check, typecheck, test:coverage, test:e2e, test:visual
 ```
 
 - The first Playwright run needs `npx playwright install chromium`.
+- Pre-commit hook (`.githooks/pre-commit`, enabled by `prepare` via `core.hooksPath`): exports the index to a temp dir, links `node_modules` entry by entry (not `.tmp`/`.vite`, so tsc and Vite caches stay separate) and runs `CI=1 npm run check` there. So a commit fails while tests are out of date with the code; the user decides whether to use `--no-verify`, never add it on your own. On failure the temp dir with reports is kept.
 - Playwright builds `dist-e2e` with `--mode e2e` and serves it on port 4179. Locally it reuses a server that is already running there, which may still be serving an old build.
-- Visual baselines (`e2e/__screenshots__/<project>/*-darwin.png`) exist only for macOS.
+- Visual tests run only in Docker: the `visual-*` projects exist only when `VISUAL_DOCKER` is set, which `scripts/test-visual-docker.sh` does. Baselines are `e2e/__screenshots__/<project>/<name>.png`, with no platform suffix.
+- The script uses the image tag matching the installed `@playwright/test`, keeps Linux `node_modules` in a Docker volume (`npm ci` reruns when `package-lock.json` changes) and mounts `e2e/support/fonts.conf`: without it the image renders `system-ui` with a CJK font that breaks Polish diacritics.
 
 ## Architecture
 

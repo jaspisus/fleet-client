@@ -72,7 +72,6 @@ export const useAnimatedVehicles = ({
     frameRef.current = requestAnimationFrame(loop)
   })
 
-  // Start a movement for every vehicle with a new report.
   useEffect(() => {
     const time = performance.now()
     const tweens = tweensRef.current

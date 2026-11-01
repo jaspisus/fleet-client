@@ -6,9 +6,6 @@
   box-sizing: border-box;
 }
 
-/* Thin scrollbars on a transparent track, so scroll containers (map list, dialog body,
-   table) don't show the light system scrollbar. `scrollbar-color` is inherited;
-   `scrollbar-width` is not. */
 * {
   scrollbar-width: thin;
 }
@@ -19,7 +16,6 @@ html {
   scrollbar-color: var(--color-scrollbar-thumb) transparent;
 }
 
-/* Lock page scroll while a modal dialog is open. `Dialog` keeps the scrollbar's space meanwhile. */
 html:has(dialog[open]) {
   overflow: hidden;
 }

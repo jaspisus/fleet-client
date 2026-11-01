@@ -9,7 +9,6 @@ export const createQueryClient = () =>
         retry: shouldRetryRequest,
       },
       mutations: {
-        // A save is not repeated behind the user's back; they decide whether to try again.
         retry: false,
       },
     },

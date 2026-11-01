@@ -85,7 +85,6 @@ export const EditVehicleForm = ({
       },
     },
     listeners: {
-      // A server error describes the value that was sent; editing the field makes it outdated.
       onChange: ({ fieldApi }) =>
         setServerErrors((current) => withoutField(current, fieldApi.name)),
     },

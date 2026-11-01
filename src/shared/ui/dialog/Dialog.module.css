@@ -1,4 +1,3 @@
-/* Mobile first: the dialog fills the whole screen. */
 .dialog {
   width: 100%;
   max-width: 100%;
@@ -9,7 +8,6 @@
   border: 0;
   background: var(--color-surface);
   color: var(--color-text);
-  /* Where the dialog slides in from and out to. */
   --dialog-offset: translateY(24px);
 }
 
@@ -27,7 +25,6 @@
   animation: fade-in var(--transition-enter) both;
 }
 
-/* Set by the component while the exit animation plays; it unmounts afterwards. */
 .dialog[data-closing] {
   animation: dialog-out var(--transition-exit) both;
   pointer-events: none;
@@ -90,7 +87,6 @@
   padding: var(--space-4);
 }
 
-/* From tablets up the dialog is a centred card. */
 @media (min-width: 768px) {
   .dialog {
     width: min(760px, calc(100% - 2 * var(--gutter)));

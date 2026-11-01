@@ -36,7 +36,6 @@ export const VehiclesPage = ({ search, onSearchChange }: VehiclesPageProps) => {
         onQueryChange={changeQuery}
         onSortChange={(sort) => onSearchChange({ ...search, sort: toSortParam(sort) })}
       />
-      {/* The edit dialog route renders here, over the table. */}
       <Outlet />
     </Container>
   )

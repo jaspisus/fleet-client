@@ -28,4 +28,8 @@ dist-e2e
 coverage
 playwright-report
 test-results
-.env
+
+# Environment
+.env*
+!.env.example
+!.env.e2e

@@ -32,8 +32,6 @@
   cursor: pointer;
 }
 
-/* A selected item keeps one background: a hover colour on its button alone would split the card
-   from its details and cover the accent bar. The whole open card is clickable, so it tints as one. */
 .item:not(.selected) .button:hover {
   background: var(--color-surface-hover);
 }
@@ -62,12 +60,10 @@
   font-weight: var(--font-weight-bold);
 }
 
-/* Long names give way to the status badge and chevron, not the other way round. */
 .summary > :not(.name) {
   flex-shrink: 0;
 }
 
-/* Points down when collapsed, up when the details are open. */
 .chevron {
   width: 7px;
   height: 7px;
@@ -88,8 +84,6 @@
   border-color: var(--color-text);
 }
 
-/* One line, so the report time ticking between "teraz" and "40 s temu" never changes the row
-   height. Only the report time shrinks if the line is too narrow. */
 .meta {
   display: flex;
   gap: var(--space-3);
@@ -102,19 +96,16 @@
 }
 
 .plate {
-  /* The same cap as the table's plate column, so speed and report time stay on the line. */
   max-width: 12ch;
   font-family: var(--font-mono);
 }
 
-/* The emergency mobile layout keeps rows compact: no report time and no details. */
 .reported,
 .chevron,
 .detailsPanel {
   display: none;
 }
 
-/* Expands and collapses by animating its single row between 0fr and the content's height. */
 .detailsPanel {
   grid-template-rows: 0fr;
   transition: grid-template-rows var(--transition-exit);

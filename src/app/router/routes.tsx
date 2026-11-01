@@ -50,8 +50,6 @@ const indexRoute = createRoute({
   },
 })
 
-// Loaders only start fetching; pages render their own loading states, so navigation is instant
-// even with a slow API.
 const vehiclesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'vehicles',
@@ -71,9 +69,6 @@ const vehiclesRoute = createRoute({
   },
 })
 
-// One dialog for both modes: switching between details and edit swaps its content without closing
-// it. Details (`/vehicles/$vehicleId`) is the mobile entry point; the table's Edit goes straight
-// to edit mode.
 const vehicleRoute = createRoute({
   getParentRoute: () => vehiclesRoute,
   path: '$vehicleId',
@@ -122,7 +117,6 @@ const mapRoute = createRoute({
   loader: ({ context: { queryClient } }) => {
     void queryClient.prefetchQuery(vehiclesQueryOptions())
   },
-  // MapLibre is large, so the map page is a separate chunk loaded on first visit.
   component: lazyRouteComponent(() => import('@/pages/live-map'), 'LiveMapPage'),
   pendingComponent: LoadingState,
 })

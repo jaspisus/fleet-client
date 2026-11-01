@@ -10,7 +10,6 @@ export const isVehicleType = (value: unknown): value is VehicleType =>
 export const isFuelType = (value: unknown): value is FuelType =>
   FUEL_TYPES.some((type) => type === value)
 
-/** A short reference to another object. */
 export interface EntityReference {
   id: string
   name: string

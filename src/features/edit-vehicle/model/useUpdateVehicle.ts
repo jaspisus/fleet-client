@@ -28,7 +28,6 @@ export const useUpdateVehicle = (vehicleId: string) => {
       showToast(t('editVehicle.saved', { name: saved.name }))
     },
     onError: (error) => {
-      // The vehicle is gone, so the cached list is out of date.
       if (isApiError(error) && error.status === 404)
         void queryClient.invalidateQueries({ queryKey: vehicleKeys.all })
     },

@@ -10,7 +10,6 @@ import { createLiveTrackClient, type ConnectionStatus } from './liveTrackClient'
 export const useLiveTracking = (vehicleIds: readonly string[]) => {
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const [attempt, setAttempt] = useState(0)
-  // A string key, so a new array with the same IDs does not reconnect.
   const vehicleIdsKey = vehicleIds.join(',')
 
   useEffect(() => {

@@ -1,7 +1,3 @@
-/*
- * Mobile (emergency access): the map on top, a compact list below it.
- * From 768px: the list on the left and the map beside it, both filling the viewport height.
- */
 .layout {
   display: grid;
   grid-template-areas:

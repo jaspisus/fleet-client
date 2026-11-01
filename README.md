@@ -11,7 +11,7 @@ The UI is Polish by default, with English in a language dropdown. Everything els
 
 | Vehicles (1440 px) | Live map (768 px) | Mobile (390 px) |
 | --- | --- | --- |
-| ![Vehicle table](e2e/__screenshots__/visual-1440/vehicles-darwin.png) | ![Live map](e2e/__screenshots__/visual-768/live-map-darwin.png) | ![Edit dialog](e2e/__screenshots__/visual-390/edit-dialog-errors-darwin.png) |
+| ![Vehicle table](e2e/__screenshots__/visual-1440/vehicles.png) | ![Live map](e2e/__screenshots__/visual-768/live-map.png) | ![Edit dialog](e2e/__screenshots__/visual-390/edit-dialog-errors.png) |
 
 ## Getting started
 
@@ -37,10 +37,15 @@ The API address can be changed with `VITE_API_BASE_URL` (see `.env.example`).
 | `npm test` / `npm run test:run` | Vitest in watch mode / once |
 | `npm run test:coverage` | Vitest with a v8 coverage report and thresholds |
 | `npm run test:e2e` | Playwright functional tests (1440 px desktop + 390 px mobile) |
-| `npm run test:visual` | Playwright visual regression at 390, 768, 1024, 1280, 1440, 1920 and 2560 px |
+| `npm run test:visual` | Playwright visual regression at 390, 768, 1024, 1280, 1440, 1920 and 2560 px, in Docker |
 | `npm run test:visual:update` | Re-record the visual baselines after an intended UI change |
+| `npm run check` | Everything above: lint, format check, type-check, Vitest with coverage, e2e and visual tests |
 
 The first Playwright run needs a browser: `npx playwright install chromium`.
+
+`npm install` enables a pre-commit hook (`.githooks/pre-commit`) that runs `npm run check` on the staged
+files, so a commit goes through only when every check passes. It takes a few minutes and needs Docker.
+Skip it once with `git commit --no-verify`.
 
 ## Tests
 
@@ -90,8 +95,9 @@ The clock is fixed and reduced motion is on, so runs are deterministic and scree
   - the map with a selection;
   - one English check.
 
-Baselines are per platform (`*-darwin.png` were recorded on macOS). Font rendering differs on Linux,
-so CI should record its own (`*-linux.png`) in the official `mcr.microsoft.com/playwright` image.
+Visual tests run only in the official `mcr.microsoft.com/playwright` image (Docker must be running),
+because font rendering differs between systems. One set of baselines then works on macOS, Linux,
+Windows and in CI.
 
 ## Architecture
 
@@ -171,6 +177,6 @@ src/
 - Filters by status and fleet on the map list; a "follow this vehicle" camera mode; clustering if the
   fleet grows.
 - Automated accessibility checks (axe) in the Playwright suite.
-- CI: lint, type-check, Vitest and Playwright in the Playwright Docker image, with Linux baselines.
+- CI: lint, type-check, Vitest and Playwright in the Playwright Docker image (the visual tests already run there).
 - An optimistic save (with rollback) if the real API turns out to be slow.
 - Translated MapLibre control tooltips.

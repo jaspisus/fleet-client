@@ -100,7 +100,6 @@ export const VehicleEditDialog = ({
   const queryClient = useQueryClient()
   const { data: vehicle } = useQuery(vehicleQueryOptions(vehicleId, queryClient))
   const isSaving = useIsMutating({ mutationKey: updateVehicleMutationKey(vehicleId) }) > 0
-  // The title is the vehicle name; the mode's heading is the fallback until the vehicle loads.
   const heading = t(mode === 'view' ? 'editVehicle.detailsTitle' : 'editVehicle.title')
   const title = vehicle ? vehicle.name : heading
   useDocumentTitle(t('app.name'), title)

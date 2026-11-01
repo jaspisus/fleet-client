@@ -98,8 +98,7 @@ const TrackingListItem = ({
         setShowDetails(false)
         return
       }
-      // Keep the selected vehicle visible, e.g. after it was picked on the map. Scrolling after
-      // the expansion brings the whole details panel into view.
+      // Scrolling after the expansion brings the whole details panel into view.
       itemRef.current?.scrollIntoView({
         block: 'nearest',
         behavior: prefersReducedMotion() ? 'auto' : 'smooth',

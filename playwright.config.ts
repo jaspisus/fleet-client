@@ -2,15 +2,13 @@ import { defineConfig, devices } from '@playwright/test'
 
 const PORT = 4179
 
-/** Viewports of the visual regression suite: phone, tablet, laptops and wide screens. */
 const VISUAL_WIDTHS = [390, 768, 1024, 1280, 1440, 1920, 2560]
 
 const viewport = (width: number) => ({ width, height: width < 768 ? 844 : 900 })
 
 export default defineConfig({
   testDir: './e2e',
-  // Baselines are per platform: font rendering differs between macOS and Linux (CI).
-  snapshotPathTemplate: '{testDir}/__screenshots__/{projectName}/{arg}-{platform}{ext}',
+  snapshotPathTemplate: '{testDir}/__screenshots__/{projectName}/{arg}{ext}',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
@@ -29,7 +27,6 @@ export default defineConfig({
     locale: 'pl-PL',
     timezoneId: 'Europe/Warsaw',
     colorScheme: 'dark',
-    // No marker animation, so screenshots are stable.
     reducedMotion: 'reduce',
     trace: 'retain-on-failure',
     launchOptions: {
@@ -49,7 +46,7 @@ export default defineConfig({
       testMatch: /mobile\.e2e\.ts$/,
       use: { viewport: viewport(390), hasTouch: true },
     },
-    ...VISUAL_WIDTHS.map((width) => ({
+    ...(process.env.VISUAL_DOCKER ? VISUAL_WIDTHS : []).map((width) => ({
       name: `visual-${width}`,
       testMatch: /\.visual\.ts$/,
       use: { viewport: viewport(width) },

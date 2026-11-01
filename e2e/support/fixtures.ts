@@ -1,5 +1,4 @@
-// Fictional data shaped like the examples in API.md. Times are relative to FIXED_NOW, which the
-// tests install as the browser clock.
+// Times are relative to FIXED_NOW, which the tests install as the browser clock.
 
 export const API_ORIGIN = 'http://fleet-api.test'
 export const FIXED_NOW = new Date('2026-10-30T09:16:00.000Z')
