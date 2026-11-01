@@ -117,7 +117,7 @@ src/
 
 ## Decisions
 
-- **Stack from STACK.md**, plus `react-map-gl`, `@microsoft/signalr`, i18next, Playwright and
+- **Stack from [docs/STACK.md](docs/STACK.md)**, plus `react-map-gl`, `@microsoft/signalr`, i18next, Playwright and
   Prettier. No zod, MSW or CSS framework: hand-written validators, a `fetch` stub and Playwright
   routing are enough.
 - **Server state in TanStack Query, client state in Zustand** (selected vehicle, live positions,

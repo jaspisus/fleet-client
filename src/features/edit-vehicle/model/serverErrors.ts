@@ -6,7 +6,7 @@ type MessageRule = readonly [pattern: RegExp, toError: (match: RegExpMatchArray)
 const fixed = (key: ValidationKey) => (): FieldError => ({ key })
 
 /**
- * The API answers in English only. Its validation messages (all listed in API.md) are mapped to
+ * The API answers in English only. Its validation messages (all listed in docs/API.md) are mapped to
  * our translation keys, so the UI shows them in the selected language.
  */
 const SERVER_MESSAGE_RULES: readonly MessageRule[] = [

@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Fleet dispatcher app (task: `Zadanie.md`, stack: `STACK.md`, API: `API.md`): a vehicle table with an edit dialog, and a live map (SignalR) with a vehicle list whose selection syncs with the map. Code, comments and README are in English; the UI defaults to Polish, with a PL/EN dropdown.
+Fleet dispatcher app (task: `docs/Zadanie.md`, stack: `docs/STACK.md`, API: `docs/API.md`): a vehicle table with an edit dialog, and a live map (SignalR) with a vehicle list whose selection syncs with the map. Code, comments and README are in English; the UI defaults to Polish, with a PL/EN dropdown.
 
 ## Commands
 
@@ -70,7 +70,7 @@ npm run check                                            # lint, format:check, t
 
 **Edit form** (`features/edit-vehicle`, TanStack Form):
 - Validation is one form-level `onDynamic` validator (`validateVehicleForm`) with `revalidateLogic({ mode: 'submit', modeAfterSubmission: 'change' })`. Do not switch to blur validation: errors appearing on blur moved the Save button away mid-click.
-- Validators return translation keys. `serverErrors.ts` maps the API's English messages (all listed in API.md) to the same keys.
+- Validators return translation keys. `serverErrors.ts` maps the API's English messages (all listed in docs/API.md) to the same keys.
 - `readOnly` disables the fieldset and hides Save/Cancel; the details dialog uses it. The form is keyed by mode, so leaving edit discards changes. After a mode switch, focus moves to the new content (name field or the header Edit button), because the focused button was removed.
 - Saving uses `mutate(..., { onSuccess, onError })`, so a dialog closed mid-save never navigates. Cache updates and the toast live in the `useMutation` options.
 

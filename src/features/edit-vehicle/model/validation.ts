@@ -22,7 +22,7 @@ export type FieldError = { key: ValidationKey; params?: Record<string, number> }
 
 export type VehicleFormErrors = Partial<Record<VehicleFormField, FieldError>>
 
-// The same rules as the API (see API.md), so most mistakes are caught before saving.
+// The same rules as the API (see docs/API.md), so most mistakes are caught before saving.
 export const NAME_MIN_LENGTH = 2
 export const NAME_MAX_LENGTH = 60
 export const REGISTRATION_NUMBER_MAX_LENGTH = 50
