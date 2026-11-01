@@ -8,10 +8,12 @@ describe('formatRelativeTime', () => {
   it.each([
     [3, 'pl', 'teraz'],
     [3, 'en', 'now'],
-    [45, 'en', '45 seconds ago'],
-    [90, 'en', '1 minute ago'],
-    [125, 'pl', '2 minuty temu'],
-    [3 * 3600, 'en', '3 hours ago'],
+    [45, 'en', '45 sec ago'],
+    [45, 'pl', '45 sek. temu'],
+    [90, 'en', '1 min ago'],
+    [125, 'pl', '2 min temu'],
+    [3 * 3600, 'en', '3 hr ago'],
+    [3 * 3600, 'pl', '3 godz. temu'],
     [2 * 86_400, 'pl', 'przedwczoraj'],
     [5 * 86_400, 'en', '5 days ago'],
   ] as const)('%i s ago in %s is "%s"', (seconds, language, expected) => {

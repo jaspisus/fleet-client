@@ -26,6 +26,15 @@
   background: var(--color-surface-raised);
   box-shadow: var(--shadow-md);
   pointer-events: auto;
+  /* Where the toast slides in from and out to. */
+  --toast-offset: translateY(24px);
+  animation: toast-in var(--transition-enter) both;
+}
+
+/* Set by the component while the exit animation plays; it leaves the store afterwards. */
+.toast[data-closing] {
+  animation: toast-out var(--transition-exit) both;
+  pointer-events: none;
 }
 
 .error {
@@ -56,5 +65,23 @@
     inset-inline: auto var(--space-5);
     bottom: var(--space-5);
     width: 380px;
+  }
+
+  .toast {
+    --toast-offset: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: var(--toast-offset);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: var(--toast-offset);
   }
 }

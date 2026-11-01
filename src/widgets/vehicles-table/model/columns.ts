@@ -19,14 +19,6 @@ export const isVehicleColumnId = (value: string): value is VehicleColumnId =>
 const isSortableColumnId = (value: string): value is SortableColumnId =>
   value !== 'actions' && isVehicleColumnId(value)
 
-/** Columns the emergency mobile layout leaves out of the vehicle cards. */
-export const COLUMNS_HIDDEN_ON_MOBILE: ReadonlySet<VehicleColumnId> = new Set([
-  'makeModel',
-  'yearOfManufacture',
-  'type',
-  'fuelType',
-])
-
 export interface VehicleSort {
   column: SortableColumnId
   desc: boolean

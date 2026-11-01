@@ -11,15 +11,15 @@ import { EditVehicleForm, updateVehicleMutationKey } from '@/features/edit-vehic
 import { isApiError } from '@/shared/api'
 import { describeRequestError } from '@/shared/i18n'
 import { useDocumentTitle } from '@/shared/lib'
-import { Dialog, ErrorState, LoadingState } from '@/shared/ui'
+import { Dialog, ErrorState, LoadingState, useCloseDialog } from '@/shared/ui'
 
 interface VehicleEditContentProps {
   vehicleId: string
-  onClose: () => void
 }
 
-const VehicleEditContent = ({ vehicleId, onClose }: VehicleEditContentProps) => {
+const VehicleEditContent = ({ vehicleId }: VehicleEditContentProps) => {
   const { t } = useTranslation()
+  const closeDialog = useCloseDialog()
   const queryClient = useQueryClient()
   const vehicleQuery = useQuery(vehicleQueryOptions(vehicleId, queryClient))
   const vehiclesQuery = useQuery(vehiclesQueryOptions())
@@ -60,8 +60,8 @@ const VehicleEditContent = ({ vehicleId, onClose }: VehicleEditContentProps) => 
       dictionaries={dictionariesQuery.data}
       fleets={fleetsQuery.data.items}
       drivers={driversQuery.data.items}
-      onSaved={onClose}
-      onCancel={onClose}
+      onSaved={closeDialog}
+      onCancel={closeDialog}
     />
   )
 }
@@ -82,7 +82,7 @@ export const VehicleEditDialog = ({ vehicleId, onClose }: VehicleEditDialogProps
 
   return (
     <Dialog title={title} onClose={onClose} closeDisabled={isSaving}>
-      <VehicleEditContent vehicleId={vehicleId} onClose={onClose} />
+      <VehicleEditContent vehicleId={vehicleId} />
     </Dialog>
   )
 }

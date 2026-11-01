@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { useVehicleLabels, vehiclesQueryOptions, type Vehicle } from '@/entities/vehicle'
 import { selectVehicle } from '@/features/select-vehicle'
 import { describeRequestError } from '@/shared/i18n'
-import { cx } from '@/shared/lib'
 import {
   Button,
   buttonClassName,
@@ -13,14 +12,10 @@ import {
   ErrorState,
   LoadingState,
   TextInput,
+  TruncatedText,
   VisuallyHidden,
 } from '@/shared/ui'
-import {
-  COLUMNS_HIDDEN_ON_MOBILE,
-  isVehicleColumnId,
-  type VehicleColumnId,
-  type VehicleSort,
-} from '../model/columns'
+import { isVehicleColumnId, type VehicleColumnId, type VehicleSort } from '../model/columns'
 import { useVehiclesTable } from '../model/useVehiclesTable'
 import styles from './VehiclesTable.module.css'
 
@@ -31,9 +26,13 @@ type SortDirection = 'asc' | 'desc' | false
 const ARIA_SORT = { asc: 'ascending', desc: 'descending' } as const
 
 const SortIndicator = ({ direction }: { direction: SortDirection }) => (
-  <span className={styles.sortIndicator} aria-hidden="true">
-    {direction === 'asc' ? '▲' : direction === 'desc' ? '▼' : '↕'}
-  </span>
+  <svg className={styles.sortIndicator} viewBox="0 0 10 16" aria-hidden="true" focusable="false">
+    <path className={direction === 'asc' ? styles.activeArrow : undefined} d="M5 1.5 8.5 6.5h-7z" />
+    <path
+      className={direction === 'desc' ? styles.activeArrow : undefined}
+      d="M1.5 9.5h7L5 14.5z"
+    />
+  </svg>
 )
 
 const VehicleRowActions = ({ vehicle }: { vehicle: Vehicle }) => {
@@ -59,7 +58,6 @@ const VehicleRowActions = ({ vehicle }: { vehicle: Vehicle }) => {
       <Button
         size="sm"
         variant="ghost"
-        className={styles.mapAction}
         onClick={showOnMap}
         aria-label={t('vehicles.actions.showOnMapLabel', { name: vehicle.name })}
       >
@@ -75,11 +73,11 @@ const VehicleCell = ({ columnId, vehicle }: { columnId: VehicleColumnId; vehicle
 
   switch (columnId) {
     case 'name':
-      return <span className={styles.name}>{vehicle.name}</span>
+      return <TruncatedText className={styles.name} text={vehicle.name} />
     case 'registrationNumber':
-      return <span className={styles.plate}>{vehicle.registrationNumber}</span>
+      return <TruncatedText className={styles.plate} text={vehicle.registrationNumber} />
     case 'makeModel':
-      return `${vehicle.manufacturer.name} ${vehicle.model.name}`
+      return <TruncatedText text={`${vehicle.manufacturer.name} ${vehicle.model.name}`} />
     case 'yearOfManufacture':
       return vehicle.yearOfManufacture
     case 'type':
@@ -87,10 +85,10 @@ const VehicleCell = ({ columnId, vehicle }: { columnId: VehicleColumnId; vehicle
     case 'fuelType':
       return labels.fuelType(vehicle.fuelType)
     case 'fleet':
-      return vehicle.fleet.name
+      return <TruncatedText text={vehicle.fleet.name} />
     case 'driver':
       return vehicle.driver ? (
-        vehicle.driver.name
+        <TruncatedText text={vehicle.driver.name} />
       ) : (
         <span className={styles.muted}>{t('vehicles.noDriver')}</span>
       )
@@ -107,8 +105,8 @@ interface VehiclesTableProps {
 }
 
 /**
- * The vehicle list with search and sorting. Below 768px rows turn into cards (an emergency
- * layout with fewer details); explicit ARIA roles keep the table semantics when CSS changes the
+ * The vehicle list with search and sorting. Below 768px rows turn into cards with every detail
+ * and action but no sorting; explicit ARIA roles keep the table semantics when CSS changes the
  * `display` of table elements.
  */
 export const VehiclesTable = ({ query, sort, onQueryChange, onSortChange }: VehiclesTableProps) => {
@@ -128,9 +126,16 @@ export const VehiclesTable = ({ query, sort, onQueryChange, onSortChange }: Vehi
   return (
     <section className={styles.section} aria-labelledby={`${searchId}-title`}>
       <div className={styles.toolbar}>
-        <h1 id={`${searchId}-title`} className={styles.title}>
-          {t('vehicles.title')}
-        </h1>
+        <div className={styles.heading}>
+          <h1 id={`${searchId}-title`} className={styles.title}>
+            {t('vehicles.title')}
+          </h1>
+          {/* Always rendered: a live region must exist before its text changes, and the reserved
+              line keeps the header from jumping when the list loads. */}
+          <p className={styles.count} aria-live="polite">
+            {vehiclesQuery.isSuccess && t('vehicles.count', { count: rows.length })}
+          </p>
+        </div>
         <div className={styles.search}>
           <label htmlFor={searchId}>
             <VisuallyHidden>{t('vehicles.searchLabel')}</VisuallyHidden>
@@ -143,11 +148,6 @@ export const VehiclesTable = ({ query, sort, onQueryChange, onSortChange }: Vehi
             onChange={(event) => onQueryChange(event.target.value)}
           />
         </div>
-        {vehiclesQuery.isSuccess && (
-          <p className={styles.count} aria-live="polite">
-            {t('vehicles.count', { count: rows.length })}
-          </p>
-        )}
       </div>
 
       {vehiclesQuery.isPending && <LoadingState />}
@@ -215,10 +215,7 @@ export const VehiclesTable = ({ query, sort, onQueryChange, onSortChange }: Vehi
                         key={cell.id}
                         data-column={id}
                         data-label={columnLabel(id)}
-                        className={cx(
-                          styles.cell,
-                          COLUMNS_HIDDEN_ON_MOBILE.has(id) && styles.hiddenOnMobile,
-                        )}
+                        className={styles.cell}
                       >
                         <VehicleCell columnId={id} vehicle={row.original} />
                       </td>

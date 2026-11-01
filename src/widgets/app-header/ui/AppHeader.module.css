@@ -72,8 +72,38 @@
 
 .active,
 .active:hover {
-  border-bottom-color: var(--color-accent);
   color: var(--color-text);
+}
+
+/* One underline anchored to the active tab, so it slides when the tab changes. */
+@supports (anchor-name: --active-nav-link) {
+  .nav {
+    position: relative;
+  }
+
+  .active {
+    anchor-name: --active-nav-link;
+  }
+
+  .nav:has(.active)::after {
+    content: '';
+    position: absolute;
+    position-anchor: --active-nav-link;
+    left: anchor(left);
+    right: anchor(right);
+    bottom: anchor(bottom);
+    height: 2px;
+    background: var(--color-accent);
+    transition:
+      left var(--transition-enter),
+      right var(--transition-enter);
+  }
+}
+
+@supports not (anchor-name: --active-nav-link) {
+  .active {
+    border-bottom-color: var(--color-accent);
+  }
 }
 
 @media (min-width: 768px) {

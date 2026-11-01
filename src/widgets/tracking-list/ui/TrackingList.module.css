@@ -32,8 +32,18 @@
   cursor: pointer;
 }
 
-.button:hover {
+/* A selected item keeps one background: a hover colour on its button alone would split the card
+   from its details and cover the accent bar. The whole open card is clickable, so it tints as one. */
+.item:not(.selected) .button:hover {
   background: var(--color-surface-hover);
+}
+
+.selected:hover {
+  background: var(--color-surface-selected-hover);
+}
+
+.selected .detailsPanel {
+  cursor: pointer;
 }
 
 .button:focus-visible {
@@ -48,29 +58,80 @@
 }
 
 .name {
+  margin-right: auto;
   font-weight: var(--font-weight-bold);
-  overflow-wrap: anywhere;
 }
 
+/* Long names give way to the status badge and chevron, not the other way round. */
+.summary > :not(.name) {
+  flex-shrink: 0;
+}
+
+/* Points down when collapsed, up when the details are open. */
+.chevron {
+  width: 7px;
+  height: 7px;
+  margin: 0 var(--space-1);
+  border-right: 1.5px solid var(--color-text-muted);
+  border-bottom: 1.5px solid var(--color-text-muted);
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform var(--transition-exit);
+}
+
+.selected .chevron {
+  transform: translateY(2px) rotate(-135deg);
+  transition: transform var(--transition-enter);
+}
+
+.button:hover .chevron,
+.selected:hover .chevron {
+  border-color: var(--color-text);
+}
+
+/* One line, so the report time ticking between "teraz" and "40 s temu" never changes the row
+   height. Only the report time shrinks if the line is too narrow. */
 .meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-3);
+  gap: var(--space-3);
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
 }
 
+.meta > :not(.reported) {
+  flex-shrink: 0;
+}
+
 .plate {
+  /* The same cap as the table's plate column, so speed and report time stay on the line. */
+  max-width: 12ch;
   font-family: var(--font-mono);
 }
 
 /* The emergency mobile layout keeps rows compact: no report time and no details. */
 .reported,
-.details {
+.chevron,
+.detailsPanel {
   display: none;
 }
 
+/* Expands and collapses by animating its single row between 0fr and the content's height. */
+.detailsPanel {
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--transition-exit);
+}
+
+.selected .detailsPanel {
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--transition-enter);
+}
+
+.detailsClip {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .details {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-2) var(--space-4);
   margin: 0;
@@ -101,10 +162,14 @@
   }
 
   .reported {
-    display: inline;
+    display: block;
   }
 
-  .details {
+  .chevron {
+    display: block;
+  }
+
+  .detailsPanel {
     display: grid;
   }
 }

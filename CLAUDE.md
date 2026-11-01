@@ -62,12 +62,16 @@ npm run test:visual:update                               # re-record baselines a
 - `lib/maplibre.ts` sets the MapLibre worker URL. This is required: with Vite bundling, MapLibre 6 cannot find its worker otherwise.
 - Layer specs and the SDF arrow icon are in `lib/layers.ts`.
 
+**Map list** (`widgets/tracking-list`): the selected item's details expand by animating `grid-template-rows` from `0fr` to `1fr`. The panel is always rendered; its content mounts on selection and unmounts only after the collapse transition (`afterOwnAnimations`). Scrolling the selected item into view also waits for the expansion, so the whole panel is visible. The open card hovers as one and a click on its details collapses it too (pointer only; the button stays the keyboard/AT control, and a click that ends a text selection is ignored). The meta line (plate, speed, report time) never wraps: the report time re-renders every 10 s, and wrapping made rows jump. Only the report time shrinks (ellipsis), and relative time uses the short `Intl` style ("40 sek. temu").
+
 **Edit form** (`features/edit-vehicle`, TanStack Form):
 - Validation is one form-level `onDynamic` validator (`validateVehicleForm`) with `revalidateLogic({ mode: 'submit', modeAfterSubmission: 'change' })`. Do not switch to blur validation: errors appearing on blur moved the Save button away mid-click.
 - Validators return translation keys. `serverErrors.ts` maps the API's English messages (all listed in API.md) to the same keys.
 - Saving uses `mutate(..., { onSuccess, onError })`, so a dialog closed mid-save never navigates. Cache updates and the toast live in the `useMutation` options.
 
-**Dialog** (`shared/ui/dialog`): built on the native `<dialog>` + `showModal()`. Its `close` handler ignores events that arrive while the dialog is open again (StrictMode remount).
+**Dialog** (`shared/ui/dialog`): built on the native `<dialog>` + `showModal()`. Its `close` handler ignores events that arrive while the dialog is open again (StrictMode remount). Esc, the close button and `useCloseDialog()` (for content such as Save/Cancel) set `data-closing`, wait for the dialog's own animations (`afterOwnAnimations` in `shared/lib`; not its subtree: a spinner never finishes), then call `onClose`; calling the parent's `onClose` directly skips the exit animation. Durations are the `--transition-enter/exit` tokens, 0 ms with reduced motion. While open, it sets `scrollbar-gutter: stable` on `<html>` if the page had a scrollbar, because the scroll lock in `global.css` would otherwise shift the page.
+
+**Toasts** (`shared/ui/toast`) use the same motion: the timeout and the × button set `data-closing` on the toast and call the store's `dismiss` only after `afterOwnAnimations`; calling `dismiss` directly skips the exit animation.
 
 **i18n** (`shared/i18n`):
 - `locales/pl.ts` is the typed source of keys (`i18next.d.ts`). Other locales must `satisfies LocaleMessages`.
@@ -83,8 +87,10 @@ npm run test:visual:update                               # re-record baselines a
 
 **Styling**:
 - CSS Modules, with design tokens in `src/app/styles/tokens.css`. The app is dark only.
-- Breakpoints are mobile first: 768 / 1024 / 1280 / 1536 px; the container is capped at 1440 px.
-- Below 768 px is an intentional emergency mode with fewer features: vehicle cards, no sorting or "Show on map", compact map list.
+- Scrollbars are styled once in `global.css` (thin, `--color-scrollbar-thumb` on a transparent track); don't add per-component scrollbar styles.
+- Breakpoints are mobile first: 768 / 1024 / 1280 / 1536 px; the container is capped at 2560 px.
+- Below 768 px is a reduced mode: vehicle cards with every column, Edit and "Show on map", but no sorting; compact map list. Card layout is CSS only (`grid-auto-flow: dense` in `VehiclesTable.module.css`), so every column a table row has also shows on the card.
+- Long API text in table cells and the map list goes through `TruncatedText` (`shared/ui`; ellipsis + `title`). The table's per-column `max-width` caps (in `ch`) are in `VehiclesTable.module.css`; on cards and in the map list the container width is the limit (the list's plate also has a 12ch cap).
 
 ## Testing conventions
 
@@ -98,6 +104,7 @@ npm run test:visual:update                               # re-record baselines a
   - `stubApi(overrides)` replaces `fetch` with routes keyed `"METHOD /path"`; unknown routes return 404, and `routes` is mutable mid-test.
   - `renderWithProviders` uses a catch-all memory router; `renderWithQuery` has no router.
   - Typed fixtures.
+  - `holdAnimation(element)` gives an element one running animation (jsdom has none, so `afterOwnAnimations` calls back at once) and returns `finish()`; use it to test what happens during an exit or collapse.
   - `fakeSignalRModule` is used with `vi.mock('@microsoft/signalr', async () => (await import('@/shared/test')).fakeSignalRModule())`.
 - `renderApp(path)` (`src/app/test`) renders the real route tree.
 - MapLibre cannot run in jsdom: tests mock `react-map-gl/maplibre` or `@/widgets/vehicle-map`, and coverage excludes the map canvas and animation files.

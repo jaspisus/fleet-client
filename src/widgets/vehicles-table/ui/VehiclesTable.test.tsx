@@ -47,6 +47,10 @@ describe('VehiclesTable', () => {
     renderWithProviders(<Harness />)
 
     expect(await screen.findByRole('status')).toHaveTextContent('Ładowanie…')
+    // The count's live region exists before the list loads, so its first text is announced.
+    const count = screen.getByRole('heading', { level: 1, name: 'Pojazdy' }).nextElementSibling
+    expect(count).toHaveAttribute('aria-live', 'polite')
+    expect(count).toBeEmptyDOMElement()
   })
 
   it('lists every vehicle with translated values', async () => {
@@ -62,6 +66,22 @@ describe('VehiclesTable', () => {
     expect(
       within(screen.getByRole('row', { name: /Transit 05/ })).getByText('Brak kierowcy'),
     ).toBeInTheDocument()
+  })
+
+  it('puts the full text of API values that may be cut in a tooltip', async () => {
+    stubApi()
+    renderWithProviders(<Harness />)
+
+    const row = await screen.findByRole('row', { name: /e-Transit Sopot/ })
+    for (const text of [
+      'e-Transit Sopot',
+      'GSP 2E41',
+      'Ford E-Transit',
+      'Serwis Gdańsk',
+      'Katarzyna Wiśniewska',
+    ]) {
+      expect(within(row).getByTitle(text)).toHaveTextContent(text)
+    }
   })
 
   it('searches ignoring case, spaces and Polish characters', async () => {

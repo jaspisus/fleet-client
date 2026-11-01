@@ -4,27 +4,26 @@
   gap: var(--space-4);
 }
 
+/* Title with the count under it; the search goes below on phones and to the right edge above. */
 .toolbar {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas:
-    'title count'
-    'search search';
-  align-items: center;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-3);
 }
 
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
 .title {
-  grid-area: title;
   font-size: var(--font-size-xl);
 }
 
-.search {
-  grid-area: search;
-}
-
 .count {
-  grid-area: count;
+  min-height: 1lh;
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
 }
@@ -57,9 +56,20 @@
   gap: var(--space-2);
 }
 
+/* Both arrows are always drawn; the one matching the sort direction is highlighted. */
 .sortIndicator {
-  color: var(--color-text-subtle);
-  font-size: 0.7em;
+  flex: none;
+  width: 0.63em;
+  height: 1em;
+  fill: var(--color-text-subtle);
+  stroke: var(--color-text-subtle);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+
+.sortIndicator .activeArrow {
+  fill: var(--color-accent);
+  stroke: var(--color-accent);
 }
 
 .sortButton {
@@ -79,12 +89,8 @@
   color: var(--color-text);
 }
 
-th[aria-sort] .sortIndicator {
-  color: var(--color-accent);
-}
-
 /*
- * Mobile first (emergency access): every row is a card with the essentials and the Edit action.
+ * Mobile first: every row is a card with all details and actions, but no sorting.
  * The header row is hidden; each cell shows its column name from data-label instead.
  */
 .table,
@@ -109,9 +115,11 @@ th[aria-sort] .sortIndicator {
   gap: var(--space-3);
 }
 
+/* Dense flow pulls the year up next to the registration, beside the full-width make and model. */
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-auto-flow: row dense;
   gap: var(--space-2) var(--space-4);
   padding: var(--space-4);
   border: 1px solid var(--color-border);
@@ -137,6 +145,10 @@ th[aria-sort] .sortIndicator {
   font-size: var(--font-size-md);
 }
 
+.cell[data-column='makeModel'] {
+  grid-column: 1 / -1;
+}
+
 .cell[data-column='name']::before,
 .cell[data-column='actions']::before {
   content: none;
@@ -146,13 +158,19 @@ th[aria-sort] .sortIndicator {
   grid-column: 1 / -1;
 }
 
-.hiddenOnMobile,
-.rowActions .mapAction {
-  display: none;
-}
-
 /* Tablets and up: the full table, scrolling sideways until it fits (1024px+). */
 @media (min-width: 768px) {
+  .toolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+  }
+
+  .search {
+    flex: 0 1 360px;
+  }
+
   .scroller {
     overflow-x: auto;
     border: 1px solid var(--color-border);
@@ -216,12 +234,29 @@ th[aria-sort] .sortIndicator {
     font-size: var(--font-size-sm);
   }
 
-  .hiddenOnMobile {
-    display: table-cell;
+  /*
+   * Column caps for API text, sized for realistic values: names like "Kurier Wrzeszcz", Polish
+   * plates (8 characters plus a space; the API allows 50), "Toyota Corolla Touring Sports",
+   * double-barrelled driver surnames.
+   */
+  .cell[data-column='name'] > * {
+    max-width: 24ch;
   }
 
-  .rowActions .mapAction {
-    display: inline-flex;
+  .cell[data-column='registrationNumber'] > * {
+    max-width: 12ch;
+  }
+
+  .cell[data-column='makeModel'] > * {
+    max-width: 32ch;
+  }
+
+  .cell[data-column='fleet'] > * {
+    max-width: 20ch;
+  }
+
+  .cell[data-column='driver'] > * {
+    max-width: 26ch;
   }
 
   /* The vehicle name stays visible while the table scrolls sideways. */
@@ -257,16 +292,6 @@ th[aria-sort] .sortIndicator {
 }
 
 @media (min-width: 1024px) {
-  .toolbar {
-    grid-template-columns: auto 1fr auto;
-    grid-template-areas: 'title search count';
-  }
-
-  .search {
-    justify-self: end;
-    width: min(100%, 360px);
-  }
-
   .table {
     min-width: 0;
   }

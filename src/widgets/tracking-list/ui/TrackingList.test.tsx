@@ -1,7 +1,7 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { NOW, position, sprinter01, sprinter02, transit05 } from '@/shared/test'
+import { holdAnimation, NOW, position, sprinter01, sprinter02, transit05 } from '@/shared/test'
 import { TrackingList } from './TrackingList'
 
 const positions = {
@@ -14,19 +14,21 @@ const positions = {
 
 const renderList = (selectedVehicleId: string | null = null) => {
   const onSelect = vi.fn()
-  const view = render(
+  const list = (selected: string | null) => (
     <TrackingList
       vehicles={[transit05, sprinter02, sprinter01]}
       positions={positions}
-      selectedVehicleId={selectedVehicleId}
+      selectedVehicleId={selected}
       now={NOW}
       onSelect={onSelect}
-    />,
+    />
   )
-  return { ...view, onSelect }
+  const view = render(list(selectedVehicleId))
+  return { onSelect, select: (id: string | null) => view.rerender(list(id)) }
 }
 
 const item = (name: string) => screen.getByRole('button', { name: new RegExp(`^${name}`) })
+const detailsPanel = (name: string) => item(name).nextElementSibling as HTMLElement
 
 describe('TrackingList', () => {
   it('lists vehicles by name with their live status', () => {
@@ -44,21 +46,23 @@ describe('TrackingList', () => {
     expect(item('Transit 05')).toHaveTextContent('Brak pozycji')
   })
 
+  it('puts the full text of values that may be cut in a tooltip', () => {
+    renderList(sprinter01.id)
+
+    expect(within(item('Sprinter 01')).getByTitle('Sprinter 01')).toBeInTheDocument()
+    expect(within(item('Sprinter 01')).getByTitle('GA 4K215')).toBeInTheDocument()
+    expect(within(item('Sprinter 01')).getByTitle('Raport teraz')).toBeInTheDocument()
+    expect(within(detailsPanel('Sprinter 01')).getByTitle('Anna Nowak')).toBeInTheDocument()
+    expect(within(detailsPanel('Sprinter 01')).getByTitle('Dostawy Gdynia')).toBeInTheDocument()
+  })
+
   it('selects a vehicle, and unselects it on a second click', async () => {
-    const { onSelect, rerender } = renderList()
+    const { onSelect, select } = renderList()
 
     await userEvent.click(item('Sprinter 02'))
     expect(onSelect).toHaveBeenLastCalledWith(sprinter02.id)
 
-    rerender(
-      <TrackingList
-        vehicles={[sprinter02]}
-        positions={positions}
-        selectedVehicleId={sprinter02.id}
-        now={NOW}
-        onSelect={onSelect}
-      />,
-    )
+    select(sprinter02.id)
     await userEvent.click(item('Sprinter 02'))
     expect(onSelect).toHaveBeenLastCalledWith(null)
   })
@@ -68,11 +72,54 @@ describe('TrackingList', () => {
     renderList(sprinter01.id)
 
     expect(item('Sprinter 01')).toHaveAttribute('aria-pressed', 'true')
-    const details = item('Sprinter 01').nextElementSibling as HTMLElement
+    const details = detailsPanel('Sprinter 01')
     expect(details).toHaveTextContent('KierowcaAnna Nowak')
     expect(details).toHaveTextContent('FlotaDostawy Gdynia')
     expect(details).toHaveTextContent('Kierunek↑ 152°')
     expect(details).toHaveTextContent('Ostatni raport30 paź 2026, 09:15:55')
     expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ block: 'nearest' }))
+  })
+
+  it('scrolls only once the details have expanded, so all of them are in view', async () => {
+    const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView')
+    const { select } = renderList()
+    const finishExpansion = holdAnimation(detailsPanel('Sprinter 01'))
+
+    select(sprinter01.id)
+    expect(detailsPanel('Sprinter 01')).toHaveTextContent('Anna Nowak')
+    expect(scrollIntoView).not.toHaveBeenCalled()
+
+    await finishExpansion()
+    expect(scrollIntoView).toHaveBeenCalledOnce()
+  })
+
+  it('keeps the details until the card has collapsed', async () => {
+    const { select } = renderList(sprinter01.id)
+    const panel = detailsPanel('Sprinter 01')
+    const finishCollapse = holdAnimation(panel)
+
+    select(null)
+    expect(item('Sprinter 01')).toHaveAttribute('aria-pressed', 'false')
+    expect(panel).toHaveTextContent('Anna Nowak')
+
+    await finishCollapse()
+    expect(panel.textContent).toBe('')
+  })
+
+  it('collapses the open card on a click on its details', async () => {
+    const { onSelect } = renderList(sprinter01.id)
+
+    await userEvent.click(screen.getByText('Anna Nowak'))
+
+    expect(onSelect).toHaveBeenCalledWith(null)
+  })
+
+  it('keeps the card open when a click ends a text selection', () => {
+    const { onSelect } = renderList(sprinter01.id)
+    vi.spyOn(window, 'getSelection').mockReturnValue({ toString: () => 'Anna' } as Selection)
+
+    fireEvent.click(screen.getByText('Anna Nowak'))
+
+    expect(onSelect).not.toHaveBeenCalled()
   })
 })

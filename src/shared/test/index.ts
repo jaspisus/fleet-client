@@ -1,3 +1,4 @@
+export { holdAnimation } from './animations'
 export { fakeConnections, FakeHubConnection, fakeSignalRModule } from './fakeSignalR'
 export {
   defaultApiRoutes,
