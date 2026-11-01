@@ -6,7 +6,7 @@ A small app for a vehicle fleet dispatcher, working against the Fleet API (REST 
 - **Live map** – a list of vehicles next to a MapLibre map where they move live (SignalR). The list
   and the map share one selected vehicle.
 
-The UI is Polish by default, with an English switch. Everything else (code, comments, this file) is in English.
+The UI is Polish by default, with English in a language dropdown. Everything else (code, comments, this file) is in English.
 
 | Vehicles (1440 px) | Live map (768 px) | Mobile (390 px) |
 | --- | --- | --- |
@@ -44,10 +44,11 @@ The first Playwright run needs a browser: `npx playwright install chromium`.
 ## Tests
 
 **Unit and component tests (Vitest + Testing Library, jsdom)** live next to the code (`*.test.ts(x)`):
-199 tests, about 90% statement coverage. They cover:
+204 tests, about 90% statement coverage. They cover:
 
 - pure logic: validation rules, mapping API messages, status, interpolation, URL state, formatting;
 - every component's states, assertions written the way a user sees the UI (roles, labels, Polish copy);
+- keyboard and mouse use of custom widgets (the language dropdown);
 - integration through the real route tree (`src/app/test/renderApp.tsx`).
 
 The network is faked at the `fetch` level (`src/shared/test/fetchStub.ts`), so the real API client
@@ -125,8 +126,10 @@ src/
   drawn straight into the MapLibre source; with reduced motion they jump instead.
 - **Dark map style** (OpenFreeMap *dark*, not *liberty*) to match the dark-only UI. The map page is
   a lazy-loaded chunk, because MapLibre is ~1.1 MB.
-- **i18n with i18next**: Polish by default, type-checked keys, and a test that keeps PL and EN in
-  sync.
+- **i18n with i18next**: Polish by default, type-checked keys, and tests that keep every locale's
+  keys and plural forms in sync. A new language is a locale file, a flag SVG and one entry in
+  `shared/i18n/languages.ts`. The switcher is a custom, keyboard-accessible dropdown with flags, so
+  it scales past two languages.
 - **CSS Modules + design tokens** (`src/app/styles/tokens.css`), kept basic for a later restyle.
 - **Mobile below 768 px is an emergency mode**: vehicle cards with Edit, a full-screen form, and
   the map with a compact list. No sorting or detail panels.
@@ -144,6 +147,8 @@ src/
 - Data from the API (fleet, driver and model names) is not translated; only the UI and the
   enum values (vehicle and fuel types) are.
 - "Show on map" was added to connect the two views. It is not required by the task.
+- Vehicles cannot be created or deleted: the API has no `POST` or `DELETE` for vehicles, and the
+  task asks only for editing.
 
 ## What next
 

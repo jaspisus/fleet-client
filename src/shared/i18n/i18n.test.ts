@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { changeLanguage, getLanguage, i18n, LANGUAGE_STORAGE_KEY } from './i18n'
-import { en } from './locales/en'
+import { getIntlLocale, getMessages, LANGUAGES } from './languages'
 import { pl } from './locales/pl'
 
 const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/
@@ -8,26 +8,33 @@ const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/
 const flattenKeys = (messages: object, prefix = ''): string[] =>
   Object.entries(messages).flatMap(([key, value]) =>
     typeof value === 'string'
-      ? [`${prefix}${key}`.replace(PLURAL_SUFFIX, '')]
+      ? [`${prefix}${key}`]
       : flattenKeys(value as object, `${prefix}${key}.`),
   )
 
+const withoutPluralSuffix = (keys: string[]) => keys.map((key) => key.replace(PLURAL_SUFFIX, ''))
+
+const pluralBaseKeys = new Set(
+  withoutPluralSuffix(flattenKeys(pl).filter((key) => PLURAL_SUFFIX.test(key))),
+)
+
 describe('translations', () => {
-  it('has the same keys in Polish and English', () => {
-    expect(new Set(flattenKeys(en))).toEqual(new Set(flattenKeys(pl)))
+  it.each(LANGUAGES)('%s has the same keys as Polish', (language) => {
+    expect(new Set(withoutPluralSuffix(flattenKeys(getMessages(language))))).toEqual(
+      new Set(withoutPluralSuffix(flattenKeys(pl))),
+    )
   })
 
-  it('has every plural form each language needs', () => {
-    expect(Object.keys(pl.vehicles).filter((key) => key.startsWith('count_'))).toEqual([
-      'count_one',
-      'count_few',
-      'count_many',
-      'count_other',
-    ])
-    expect(Object.keys(en.vehicles).filter((key) => key.startsWith('count_'))).toEqual([
-      'count_one',
-      'count_other',
-    ])
+  it.each(LANGUAGES)('%s has exactly the plural forms the language needs', (language) => {
+    const categories = new Intl.PluralRules(getIntlLocale(language)).resolvedOptions()
+      .pluralCategories
+    const keys = flattenKeys(getMessages(language))
+
+    for (const base of pluralBaseKeys) {
+      expect(new Set(keys.filter((key) => key.replace(PLURAL_SUFFIX, '') === base))).toEqual(
+        new Set(categories.map((category) => `${base}_${category}`)),
+      )
+    }
   })
 
   it('uses Polish plural forms', () => {

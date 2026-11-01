@@ -61,7 +61,8 @@ test.describe('visual regression', () => {
   test('vehicle table in English', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'visual-1440', 'One English check is enough')
     await page.goto('/vehicles')
-    await page.getByRole('button', { name: /EN/ }).click()
+    await page.getByRole('combobox', { name: 'Język interfejsu' }).click()
+    await page.getByRole('option', { name: 'English' }).click()
     await expect(page.getByText('5 vehicles')).toBeVisible()
 
     await expect(page).toHaveScreenshot('vehicles-en.png', { fullPage: true })

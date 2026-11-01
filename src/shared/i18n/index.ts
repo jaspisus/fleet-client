@@ -1,13 +1,12 @@
+export { changeLanguage, getLanguage, i18n, LANGUAGE_STORAGE_KEY } from './i18n'
 export {
-  changeLanguage,
   DEFAULT_LANGUAGE,
-  getLanguage,
-  i18n,
+  getLanguageFlag,
+  getLanguageName,
   isLanguage,
-  LANGUAGE_STORAGE_KEY,
-  LANGUAGES,
   type Language,
-} from './i18n'
+  LANGUAGES,
+} from './languages'
 export { describeRequestError } from './errorMessage'
 export { compareText, formatDateTime, formatRelativeTime, formatSpeed } from './format'
 export { useFormatters } from './useFormatters'

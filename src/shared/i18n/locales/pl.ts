@@ -10,8 +10,6 @@ export const pl = {
   },
   language: {
     label: 'Język interfejsu',
-    pl: 'Polski',
-    en: 'English',
   },
   common: {
     retry: 'Spróbuj ponownie',

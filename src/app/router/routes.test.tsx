@@ -159,14 +159,16 @@ describe('language', () => {
     stubApi()
     const { user } = renderApp('/vehicles')
 
-    await user.click(await screen.findByRole('button', { name: /EN/ }))
+    await user.click(await screen.findByRole('combobox', { name: 'Język interfejsu' }))
+    await user.click(screen.getByRole('option', { name: 'English' }))
 
     expect(await screen.findByRole('heading', { name: 'Vehicles', level: 1 })).toBeInTheDocument()
     expect(screen.getByText('4 vehicles')).toBeInTheDocument()
     expect(screen.getAllByText('Van').length).toBeGreaterThan(0)
     expect(document.title).toBe('Vehicles · Fleet Panel')
 
-    await user.click(screen.getByRole('button', { name: /PL/ }))
+    await user.click(screen.getByRole('combobox', { name: 'Interface language' }))
+    await user.click(screen.getByRole('option', { name: 'Polski' }))
     expect(await screen.findByRole('heading', { name: 'Pojazdy', level: 1 })).toBeInTheDocument()
   })
 })

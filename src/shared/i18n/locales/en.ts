@@ -12,8 +12,6 @@ export const en = {
   },
   language: {
     label: 'Interface language',
-    pl: 'Polski',
-    en: 'English',
   },
   common: {
     retry: 'Try again',

@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Fleet dispatcher app (task: `Zadanie.md`, stack: `STACK.md`, API: `API.md`): a vehicle table with an edit dialog, and a live map (SignalR) with a vehicle list whose selection syncs with the map. Code, comments and README are in English; the UI defaults to Polish, with a PL/EN switch.
+Fleet dispatcher app (task: `Zadanie.md`, stack: `STACK.md`, API: `API.md`): a vehicle table with an edit dialog, and a live map (SignalR) with a vehicle list whose selection syncs with the map. Code, comments and README are in English; the UI defaults to Polish, with a PL/EN dropdown.
 
 ## Commands
 
@@ -70,8 +70,11 @@ npm run test:visual:update                               # re-record baselines a
 **Dialog** (`shared/ui/dialog`): built on the native `<dialog>` + `showModal()`. Its `close` handler ignores events that arrive while the dialog is open again (StrictMode remount).
 
 **i18n** (`shared/i18n`):
-- `locales/pl.ts` is the typed source of keys (`i18next.d.ts`). `en.ts` must `satisfies LocaleMessages`, and a test checks that both have the same keys.
-- Plural suffixes differ per language: pl has `_one/_few/_many/_other`, en has `_one/_other`.
+- `locales/pl.ts` is the typed source of keys (`i18next.d.ts`). Other locales must `satisfies LocaleMessages`.
+- `languages.ts` is the single registry of languages (code, own name, flag, Intl locale, messages). To add a language, add `locales/<code>.ts`, a 4:3 `flags/<country>.svg` and one registry entry; the dropdown, i18next resources and formatters follow.
+- The language dropdown (`features/switch-language`) is a custom select-only combobox (WAI-ARIA APG), not a native `<select>`. Focus stays on the trigger and the highlighted option is set with `aria-activedescendant`, so blur closes the list; the listbox prevents `mousedown` so clicking an option does not blur. Flags are SVG files, not emoji, because Windows shows emoji flags as letters.
+- Tests check that every registered locale has the same keys as pl, and exactly the plural suffixes `Intl.PluralRules` reports for it (pl: `_one/_few/_many/_other`, en: `_one/_other`).
+- Language names are not translation keys: the dropdown shows each language in its own name.
 - Use `useFormatters()` for dates, relative time, km/h and locale-aware sorting.
 
 **React Compiler is on.** Don't add manual memoization. Don't pass mutable library objects (TanStack Table header, row or column objects; the TanStack Form field API) into child components; pass the primitive values the child needs instead. Table cells render through `VehicleCell` by column id; column defs contain no JSX.

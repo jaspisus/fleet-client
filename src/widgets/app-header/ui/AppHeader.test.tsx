@@ -14,6 +14,6 @@ describe('AppHeader', () => {
       'aria-current',
       'page',
     )
-    expect(screen.getByRole('group', { name: 'Język interfejsu' })).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Język interfejsu' })).toBeInTheDocument()
   })
 })

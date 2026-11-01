@@ -61,7 +61,8 @@ test.describe('vehicle table', () => {
   test('remembers the chosen language', async ({ page }) => {
     await page.goto('/vehicles')
 
-    await page.getByRole('button', { name: /EN/ }).click()
+    await page.getByRole('combobox', { name: 'Język interfejsu' }).click()
+    await page.getByRole('option', { name: 'English' }).click()
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Vehicles')
     await expect(page.locator('html')).toHaveAttribute('lang', 'en')
 

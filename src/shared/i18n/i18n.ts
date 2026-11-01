@@ -1,15 +1,8 @@
 import i18next from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import { en } from './locales/en'
-import { pl } from './locales/pl'
+import { DEFAULT_LANGUAGE, getMessages, isLanguage, type Language, LANGUAGES } from './languages'
 
-export const LANGUAGES = ['pl', 'en'] as const
-export type Language = (typeof LANGUAGES)[number]
-export const DEFAULT_LANGUAGE: Language = 'pl'
 export const LANGUAGE_STORAGE_KEY = 'fleet-panel.language'
-
-export const isLanguage = (value: unknown): value is Language =>
-  LANGUAGES.some((language) => language === value)
 
 const readStoredLanguage = (): Language | undefined => {
   try {
@@ -36,7 +29,9 @@ i18n.on('languageChanged', (language) => {
 })
 
 void i18n.use(initReactI18next).init({
-  resources: { pl: { translation: pl }, en: { translation: en } },
+  resources: Object.fromEntries(
+    LANGUAGES.map((language) => [language, { translation: getMessages(language) }]),
+  ),
   lng: readStoredLanguage() ?? DEFAULT_LANGUAGE,
   fallbackLng: DEFAULT_LANGUAGE,
   supportedLngs: LANGUAGES,

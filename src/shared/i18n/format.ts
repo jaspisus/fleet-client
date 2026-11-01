@@ -1,14 +1,11 @@
-import type { Language } from './i18n'
-
-/** Full locales for Intl, so English uses day-month-year dates and 24-hour time. */
-const INTL_LOCALES: Record<Language, string> = { pl: 'pl-PL', en: 'en-GB' }
+import { getIntlLocale, type Language } from './languages'
 
 const cached = <T>(create: (locale: string) => T) => {
   const cache = new Map<Language, T>()
   return (language: Language) => {
     let value = cache.get(language)
     if (!value) {
-      value = create(INTL_LOCALES[language])
+      value = create(getIntlLocale(language))
       cache.set(language, value)
     }
     return value
