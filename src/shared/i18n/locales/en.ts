@@ -12,8 +12,6 @@ export const en = {
   },
   language: {
     label: 'Interface language',
-    pl: 'Polski',
-    en: 'English',
   },
   common: {
     retry: 'Try again',
@@ -64,6 +62,7 @@ export const en = {
     actions: {
       edit: 'Edit',
       editLabel: 'Edit vehicle {{name}}',
+      detailsLabel: 'Details of vehicle {{name}}',
       showOnMap: 'On map',
       showOnMapLabel: 'Show vehicle {{name}} on map',
     },
@@ -85,6 +84,7 @@ export const en = {
   },
   editVehicle: {
     title: 'Edit vehicle',
+    detailsTitle: 'Vehicle details',
     loadError: 'Could not load the vehicle data.',
     notFound: 'Vehicle not found. It may have been removed.',
     selectPlaceholder: 'Select…',

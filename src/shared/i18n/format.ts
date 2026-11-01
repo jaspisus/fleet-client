@@ -1,22 +1,20 @@
-import type { Language } from './i18n'
-
-/** Full locales for Intl, so English uses day-month-year dates and 24-hour time. */
-const INTL_LOCALES: Record<Language, string> = { pl: 'pl-PL', en: 'en-GB' }
+import { getIntlLocale, type Language } from './languages'
 
 const cached = <T>(create: (locale: string) => T) => {
   const cache = new Map<Language, T>()
   return (language: Language) => {
     let value = cache.get(language)
     if (!value) {
-      value = create(INTL_LOCALES[language])
+      value = create(getIntlLocale(language))
       cache.set(language, value)
     }
     return value
   }
 }
 
+// Short style ("40 sek. temu"): the label sits in one line of the map list and changes as time passes.
 const relativeTimeFormat = cached(
-  (locale) => new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'long' }),
+  (locale) => new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' }),
 )
 const dateTimeFormat = cached(
   (locale) => new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'medium' }),
@@ -39,7 +37,7 @@ const RELATIVE_UNITS: ReadonlyArray<[Intl.RelativeTimeFormatUnit, number]> = [
   ['second', 1],
 ]
 
-/** "2 minutes ago". Future timestamps (clock skew between server and browser) read as "now". */
+/** "2 min ago". Future timestamps (clock skew between server and browser) read as "now". */
 export const formatRelativeTime = (timestamp: number, now: number, language: Language) => {
   const elapsedSeconds = Math.max(0, Math.floor((now - timestamp) / 1000))
   const format = relativeTimeFormat(language)

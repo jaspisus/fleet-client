@@ -3,10 +3,11 @@
 A small app for a vehicle fleet dispatcher, working against the Fleet API (REST + SignalR):
 
 - **Vehicles** – a sortable, searchable table of every vehicle. Editing happens in a modal dialog.
+  On phones, tapping a compact card opens the same dialog read-only, with Edit in its header.
 - **Live map** – a list of vehicles next to a MapLibre map where they move live (SignalR). The list
   and the map share one selected vehicle.
 
-The UI is Polish by default, with an English switch. Everything else (code, comments, this file) is in English.
+The UI is Polish by default, with English in a language dropdown. Everything else (code, comments, this file) is in English.
 
 | Vehicles (1440 px) | Live map (768 px) | Mobile (390 px) |
 | --- | --- | --- |
@@ -44,11 +45,16 @@ The first Playwright run needs a browser: `npx playwright install chromium`.
 ## Tests
 
 **Unit and component tests (Vitest + Testing Library, jsdom)** live next to the code (`*.test.ts(x)`):
-199 tests, about 90% statement coverage. They cover:
+229 tests, about 92% statement coverage. They cover:
 
 - pure logic: validation rules, mapping API messages, status, interpolation, URL state, formatting;
 - every component's states, assertions written the way a user sees the UI (roles, labels, Polish copy);
-- integration through the real route tree (`src/app/test/renderApp.tsx`).
+- keyboard and mouse use of custom widgets (the language dropdown);
+- motion that gates behaviour: the dialog and toasts close only after their exit animation, and
+  the map list keeps a card's details until it has collapsed (jsdom runs no animations, so tests
+  hold one open by hand);
+- integration through the real route tree (`src/app/test/renderApp.tsx`), including the vehicle
+  dialog switching between details and edit without closing.
 
 The network is faked at the `fetch` level (`src/shared/test/fetchStub.ts`), so the real API client
 and error parsing run in every test. SignalR is replaced by a fake hub connection that tests drive
@@ -73,12 +79,14 @@ The clock is fixed and reduced motion is on, so runs are deterministic and scree
   - live updates;
   - selection in both directions (a fixture vehicle stands in the middle of the map, so a click on
     the canvas centre selects it);
+  - the list's details expanding into view and collapsing on a click;
   - "Show on map";
   - the language persisting across reloads;
-  - a mobile emergency smoke test.
+  - the mobile reduced mode: compact cards with a truncated name, details from a tapped card, edit
+    and back (also with the browser's Back), "Show on map" and the map list.
 - **Visual specs** (`*.visual.ts`) cover:
   - the table, plus its empty and error states;
-  - the edit dialog, plus a version with errors;
+  - the edit dialog, plus a version with errors, and the read-only details dialog;
   - the map with a selection;
   - one English check.
 
@@ -111,8 +119,11 @@ src/
   their own loading, error (with Retry) and empty states.
 - **Table state in the URL** (`?q=…&sort=-name`): it survives the dialog, reloads and shared links.
   Search ignores case, spaces and Polish diacritics.
-- **Edit dialog driven by the route** (`/vehicles/$id/edit`), built on the native `<dialog>` for the
-  focus trap and Esc. It does not close on a backdrop click or while saving.
+- **Vehicle dialog driven by the route**: `/vehicles/$id` shows details (the form locked),
+  `/vehicles/$id/edit` edits. Switching modes keeps the dialog open; Save and Cancel after Edit from
+  details go back to details. Built on the native `<dialog>` for the focus trap and Esc. It does not close on a backdrop click or while saving. It fades and slides in
+  and out (not with reduced motion); the route changes only after the exit animation. Toasts
+  animate the same way.
 - **Validation mirrors the API**: the same rules, including a unique plate and a model that belongs
   to the make. Fields validate on Save, then live as you type (errors shown on blur moved the Save
   button mid-click). API errors are mapped to translation keys and shown on their fields.
@@ -125,11 +136,13 @@ src/
   drawn straight into the MapLibre source; with reduced motion they jump instead.
 - **Dark map style** (OpenFreeMap *dark*, not *liberty*) to match the dark-only UI. The map page is
   a lazy-loaded chunk, because MapLibre is ~1.1 MB.
-- **i18n with i18next**: Polish by default, type-checked keys, and a test that keeps PL and EN in
-  sync.
+- **i18n with i18next**: Polish by default, type-checked keys, and tests that keep every locale's
+  keys and plural forms in sync. A new language is a locale file, a flag SVG and one entry in
+  `shared/i18n/languages.ts`. The switcher is a custom, keyboard-accessible dropdown with flags, so
+  it scales past two languages.
 - **CSS Modules + design tokens** (`src/app/styles/tokens.css`), kept basic for a later restyle.
-- **Mobile below 768 px is an emergency mode**: vehicle cards with Edit, a full-screen form, and
-  the map with a compact list. No sorting or detail panels.
+- **Mobile below 768 px is a reduced mode**: compact, tappable vehicle cards (name, plate,
+  driver) with "Show on map" next to the name, a full-screen dialog, and the map with a compact list. No sorting or detail panels.
 - **Accessibility basics**: landmarks, labelled fields with linked error messages, `aria-sort`,
   and live regions for status, counts and toasts.
 
@@ -143,7 +156,13 @@ src/
   screenshots stable.
 - Data from the API (fleet, driver and model names) is not translated; only the UI and the
   enum values (vehicle and fuel types) are.
+- API text in the table (name, plate, make and model, fleet, driver) is cut with an ellipsis at a
+  per-column width sized for realistic values, with the full text in a tooltip. The API allows
+  longer values (a 60-character name, a 50-character plate) than a readable table can show.
+  The map list cuts the same values the same way, at the list's width.
 - "Show on map" was added to connect the two views. It is not required by the task.
+- Vehicles cannot be created or deleted: the API has no `POST` or `DELETE` for vehicles, and the
+  task asks only for editing.
 
 ## What next
 

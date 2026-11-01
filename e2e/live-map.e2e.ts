@@ -49,6 +49,21 @@ test.describe('live map', () => {
     await expect(vehicleList(page).getByRole('button', { pressed: true })).toHaveCount(0)
   })
 
+  test('expands the details of the picked vehicle, and a click on them collapses it', async ({
+    page,
+  }) => {
+    await page.goto('/map')
+    const details = vehicleList(page).getByText('Anna Nowak')
+
+    await listItem(page, 'Sprinter 01').click()
+    await expect(details).toBeVisible()
+    await expect(details).toBeInViewport()
+
+    await details.click()
+    await expect(listItem(page, 'Sprinter 01')).toHaveAttribute('aria-pressed', 'false')
+    await expect(details).toHaveCount(0)
+  })
+
   test('"Show on map" in the table opens the map with the vehicle selected', async ({ page }) => {
     await page.goto('/vehicles')
 

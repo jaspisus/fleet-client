@@ -11,6 +11,7 @@ import {
   type VehicleDictionaries,
 } from '@/entities/vehicle'
 import { useFormatters } from '@/shared/i18n'
+import { cx } from '@/shared/lib'
 import { Alert, Button } from '@/shared/ui'
 import { toFormValues, toUpdateCommand, type VehicleFormField } from '../model/formValues'
 import { describeSaveError, type TranslatableMessage } from '../model/saveError'
@@ -39,6 +40,10 @@ interface EditVehicleFormProps {
   drivers: readonly Driver[]
   onSaved: (vehicle: Vehicle) => void
   onCancel: () => void
+  /** Shows the values locked, without Save and Cancel. */
+  readOnly?: boolean
+  /** Focuses the first field on mount. */
+  autoFocus?: boolean
 }
 
 export const EditVehicleForm = ({
@@ -49,6 +54,8 @@ export const EditVehicleForm = ({
   drivers,
   onSaved,
   onCancel,
+  readOnly = false,
+  autoFocus = false,
 }: EditVehicleFormProps) => {
   const { t } = useTranslation()
   const { compare } = useFormatters()
@@ -148,7 +155,10 @@ export const EditVehicleForm = ({
 
   return (
     <form className={styles.form} onSubmit={handleSubmit} noValidate aria-busy={isSubmitting}>
-      <fieldset className={styles.fields} disabled={isSubmitting}>
+      <fieldset
+        className={cx(styles.fields, readOnly && styles.readOnly)}
+        disabled={readOnly || isSubmitting}
+      >
         <form.Field name="name">
           {(field) => (
             <FormTextControl
@@ -157,6 +167,7 @@ export const EditVehicleForm = ({
               value={field.state.value}
               error={errorFor(field)}
               maxLength={NAME_MAX_LENGTH}
+              autoFocus={autoFocus && !readOnly}
               onChange={field.handleChange}
               onBlur={field.handleBlur}
             />
@@ -290,14 +301,16 @@ export const EditVehicleForm = ({
 
       {formMessage && <Alert>{translate(formMessage)}</Alert>}
 
-      <div className={styles.actions}>
-        <Button variant="ghost" onClick={onCancel} disabled={isSubmitting}>
-          {t('common.cancel')}
-        </Button>
-        <Button type="submit" variant="primary" disabled={isSubmitting || isDefaultValue}>
-          {isSubmitting ? t('common.saving') : t('common.save')}
-        </Button>
-      </div>
+      {!readOnly && (
+        <div className={styles.actions}>
+          <Button variant="ghost" onClick={onCancel} disabled={isSubmitting}>
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" variant="primary" disabled={isSubmitting || isDefaultValue}>
+            {isSubmitting ? t('common.saving') : t('common.save')}
+          </Button>
+        </div>
+      )}
     </form>
   )
 }

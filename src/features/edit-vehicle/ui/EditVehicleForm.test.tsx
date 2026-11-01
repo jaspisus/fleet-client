@@ -18,7 +18,7 @@ import { EditVehicleForm } from './EditVehicleForm'
 
 const PUT = `PUT /api/vehicles/${sprinter01.id}`
 
-const renderForm = () => {
+const renderForm = (options: { readOnly?: boolean; autoFocus?: boolean } = {}) => {
   const onSaved = vi.fn()
   const onCancel = vi.fn()
   const view = renderWithQuery(
@@ -30,6 +30,7 @@ const renderForm = () => {
       drivers={drivers}
       onSaved={onSaved}
       onCancel={onCancel}
+      {...options}
     />,
   )
   view.queryClient.setQueryData(vehicleKeys.list(), { items: vehicles, total: vehicles.length })
@@ -225,5 +226,22 @@ describe('EditVehicleForm', () => {
 
     expect(onCancel).toHaveBeenCalled()
     expect(requests).toHaveLength(0)
+  })
+
+  it('shows the values locked, without Save and Cancel, when read-only', () => {
+    renderForm({ readOnly: true })
+
+    for (const label of ['Nazwa', 'Numer rejestracyjny', 'Marka', 'Model', 'Kierowca']) {
+      expect(field(label)).toBeDisabled()
+    }
+    expect(field('Nazwa')).toHaveValue('Sprinter 01')
+    expect(screen.queryByRole('button', { name: 'Zapisz' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Anuluj' })).not.toBeInTheDocument()
+  })
+
+  it('focuses the first field when asked to', () => {
+    renderForm({ autoFocus: true })
+
+    expect(field('Nazwa')).toHaveFocus()
   })
 })

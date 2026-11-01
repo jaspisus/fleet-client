@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Vehicle } from '@/entities/vehicle'
 import {
@@ -8,7 +8,8 @@ import {
   type PositionsById,
 } from '@/entities/vehicle-position'
 import { useFormatters } from '@/shared/i18n'
-import { cx, prefersReducedMotion } from '@/shared/lib'
+import { afterOwnAnimations, cx, prefersReducedMotion } from '@/shared/lib'
+import { TruncatedText } from '@/shared/ui'
 import styles from './TrackingList.module.css'
 
 interface VehicleDetailsProps {
@@ -24,11 +25,15 @@ const VehicleDetails = ({ vehicle, position }: VehicleDetailsProps) => {
     <dl className={styles.details}>
       <div>
         <dt>{t('map.details.driver')}</dt>
-        <dd>{vehicle.driver?.name ?? t('vehicles.noDriver')}</dd>
+        <dd>
+          {vehicle.driver ? <TruncatedText text={vehicle.driver.name} /> : t('vehicles.noDriver')}
+        </dd>
       </div>
       <div>
         <dt>{t('map.details.fleet')}</dt>
-        <dd>{vehicle.fleet.name}</dd>
+        <dd>
+          <TruncatedText text={vehicle.fleet.name} />
+        </dd>
       </div>
       {position && (
         <>
@@ -77,15 +82,32 @@ const TrackingListItem = ({
   const { t } = useTranslation()
   const format = useFormatters()
   const itemRef = useRef<HTMLLIElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const status = getVehicleStatus(position, now)
+  // Details stay mounted after deselection until the panel has collapsed.
+  const [showDetails, setShowDetails] = useState(isSelected)
+  if (isSelected && !showDetails) setShowDetails(true)
 
-  // Keep the selected vehicle visible, e.g. after it was picked on the map.
   useEffect(() => {
-    if (isSelected)
+    const panel = panelRef.current
+    if (!panel) return
+    let cancelled = false
+    afterOwnAnimations(panel, () => {
+      if (cancelled) return
+      if (!isSelected) {
+        setShowDetails(false)
+        return
+      }
+      // Keep the selected vehicle visible, e.g. after it was picked on the map. Scrolling after
+      // the expansion brings the whole details panel into view.
       itemRef.current?.scrollIntoView({
         block: 'nearest',
         behavior: prefersReducedMotion() ? 'auto' : 'smooth',
       })
+    })
+    return () => {
+      cancelled = true
+    }
   }, [isSelected])
 
   return (
@@ -97,22 +119,38 @@ const TrackingListItem = ({
         onClick={() => onSelect(isSelected ? null : vehicle.id)}
       >
         <span className={styles.summary}>
-          <span className={styles.name}>{vehicle.name}</span>
+          <TruncatedText className={styles.name} text={vehicle.name} />
           <VehicleStatusBadge status={status} />
+          <span className={styles.chevron} aria-hidden="true" />
         </span>
         <span className={styles.meta}>
-          <span className={styles.plate}>{vehicle.registrationNumber}</span>
+          <TruncatedText className={styles.plate} text={vehicle.registrationNumber} />
           {position && <span>{format.speed(position.speed)}</span>}
-          <span className={styles.reported}>
-            {position
-              ? t('map.reported', {
-                  time: format.relativeTime(Date.parse(position.lastReportedTime), now),
-                })
-              : t('map.noPosition')}
-          </span>
+          <TruncatedText
+            className={styles.reported}
+            text={
+              position
+                ? t('map.reported', {
+                    time: format.relativeTime(Date.parse(position.lastReportedTime), now),
+                  })
+                : t('map.noPosition')
+            }
+          />
         </span>
       </button>
-      {isSelected && <VehicleDetails vehicle={vehicle} position={position} />}
+      {/* A click anywhere on the open card collapses it, like its button. Pointer only: the button
+          stays the keyboard and screen reader control. Selecting text does not collapse. */}
+      <div
+        ref={panelRef}
+        className={styles.detailsPanel}
+        onClick={() => {
+          if (isSelected && !window.getSelection()?.toString()) onSelect(null)
+        }}
+      >
+        <div className={styles.detailsClip}>
+          {showDetails && <VehicleDetails vehicle={vehicle} position={position} />}
+        </div>
+      </div>
     </li>
   )
 }

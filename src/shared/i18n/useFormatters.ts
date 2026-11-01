@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { compareText, formatDateTime, formatRelativeTime, formatSpeed } from './format'
-import { DEFAULT_LANGUAGE, isLanguage } from './i18n'
+import { DEFAULT_LANGUAGE, isLanguage } from './languages'
 
 /** Intl formatters bound to the current UI language; components re-render when it changes. */
 export const useFormatters = () => {

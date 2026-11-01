@@ -3,7 +3,10 @@ import {
   createRoute,
   lazyRouteComponent,
   redirect,
+  useMatch,
+  useRouter,
 } from '@tanstack/react-router'
+import { useState } from 'react'
 import type { QueryClient } from '@tanstack/react-query'
 import { driversQueryOptions } from '@/entities/driver'
 import { fleetsQueryOptions } from '@/entities/fleet'
@@ -68,25 +71,49 @@ const vehiclesRoute = createRoute({
   },
 })
 
-const vehicleEditRoute = createRoute({
+// One dialog for both modes: switching between details and edit swaps its content without closing
+// it. Details (`/vehicles/$vehicleId`) is the mobile entry point; the table's Edit goes straight
+// to edit mode.
+const vehicleRoute = createRoute({
   getParentRoute: () => vehiclesRoute,
-  path: '$vehicleId/edit',
+  path: '$vehicleId',
   loader: ({ context: { queryClient }, params }) => {
     void queryClient.prefetchQuery(vehicleQueryOptions(params.vehicleId, queryClient))
     void queryClient.prefetchQuery(vehicleDictionariesQueryOptions())
     void queryClient.prefetchQuery(fleetsQueryOptions())
     void queryClient.prefetchQuery(driversQueryOptions())
   },
-  component: function VehicleEditRouteComponent() {
-    const { vehicleId } = vehicleEditRoute.useParams()
-    const navigate = vehicleEditRoute.useNavigate()
+  component: function VehicleRouteComponent() {
+    const { vehicleId } = vehicleRoute.useParams()
+    const navigate = vehicleRoute.useNavigate()
+    const router = useRouter()
+    const isEditing = useMatch({ from: vehicleEditRoute.id, shouldThrow: false }) !== undefined
+    // Edit opened from details pushed a history entry, so Save and Cancel go back to details.
+    // Edit opened directly (the table, a deep link) closes the dialog instead.
+    const [openedInDetails] = useState(!isEditing)
+    const close = () => void navigate({ to: '/vehicles', search: true })
     return (
       <VehicleEditDialog
         vehicleId={vehicleId}
-        onClose={() => void navigate({ to: '/vehicles', search: true })}
+        mode={isEditing ? 'edit' : 'view'}
+        onClose={close}
+        onEdit={() =>
+          void navigate({ to: '/vehicles/$vehicleId/edit', params: { vehicleId }, search: true })
+        }
+        onEditEnd={openedInDetails ? () => router.history.back() : undefined}
       />
     )
   },
+})
+
+const vehicleDetailsRoute = createRoute({
+  getParentRoute: () => vehicleRoute,
+  path: '/',
+})
+
+const vehicleEditRoute = createRoute({
+  getParentRoute: () => vehicleRoute,
+  path: 'edit',
 })
 
 const mapRoute = createRoute({
@@ -102,6 +129,6 @@ const mapRoute = createRoute({
 
 export const routeTree = rootRoute.addChildren([
   indexRoute,
-  vehiclesRoute.addChildren([vehicleEditRoute]),
+  vehiclesRoute.addChildren([vehicleRoute.addChildren([vehicleDetailsRoute, vehicleEditRoute])]),
   mapRoute,
 ])

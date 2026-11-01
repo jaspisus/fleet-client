@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Fleet dispatcher app (task: `Zadanie.md`, stack: `STACK.md`, API: `API.md`): a vehicle table with an edit dialog, and a live map (SignalR) with a vehicle list whose selection syncs with the map. Code, comments and README are in English; the UI defaults to Polish, with a PL/EN switch.
+Fleet dispatcher app (task: `Zadanie.md`, stack: `STACK.md`, API: `API.md`): a vehicle table with an edit dialog, and a live map (SignalR) with a vehicle list whose selection syncs with the map. Code, comments and README are in English; the UI defaults to Polish, with a PL/EN dropdown.
 
 ## Commands
 
@@ -40,7 +40,8 @@ npm run test:visual:update                               # re-record baselines a
 **Routing** (TanStack Router, code-based, `src/app/router/routes.tsx`):
 - Route wrapper components pass params and search to pages as props; pages do not import routes.
 - Loaders only *start* fetching (`void queryClient.prefetchQuery(...)`). Pages use `useQuery` and render their own loading, error and empty states.
-- The edit dialog is a child route of `/vehicles` (`$vehicleId/edit`), rendered through `<Outlet/>` over the table.
+- The vehicle dialog is the `/vehicles/$vehicleId` route, rendered through `<Outlet/>` over the table. Its children only pick the mode: index = details (read-only), `edit` = edit. The parent route renders the dialog, so switching modes does not remount or re-animate it.
+- Edit from details pushes `/edit`; Save and Cancel then call `history.back()`. Edit opened directly (table, deep link) closes the dialog. The route component decides this from the mode at mount.
 - Table search and sort live in validated search params.
 - `/map` is a lazy chunk because MapLibre is large.
 
@@ -62,16 +63,24 @@ npm run test:visual:update                               # re-record baselines a
 - `lib/maplibre.ts` sets the MapLibre worker URL. This is required: with Vite bundling, MapLibre 6 cannot find its worker otherwise.
 - Layer specs and the SDF arrow icon are in `lib/layers.ts`.
 
+**Map list** (`widgets/tracking-list`): the selected item's details expand by animating `grid-template-rows` from `0fr` to `1fr`. The panel is always rendered; its content mounts on selection and unmounts only after the collapse transition (`afterOwnAnimations`). Scrolling the selected item into view also waits for the expansion, so the whole panel is visible. The open card hovers as one and a click on its details collapses it too (pointer only; the button stays the keyboard/AT control, and a click that ends a text selection is ignored). The meta line (plate, speed, report time) never wraps: the report time re-renders every 10 s, and wrapping made rows jump. Only the report time shrinks (ellipsis), and relative time uses the short `Intl` style ("40 sek. temu").
+
 **Edit form** (`features/edit-vehicle`, TanStack Form):
 - Validation is one form-level `onDynamic` validator (`validateVehicleForm`) with `revalidateLogic({ mode: 'submit', modeAfterSubmission: 'change' })`. Do not switch to blur validation: errors appearing on blur moved the Save button away mid-click.
 - Validators return translation keys. `serverErrors.ts` maps the API's English messages (all listed in API.md) to the same keys.
+- `readOnly` disables the fieldset and hides Save/Cancel; the details dialog uses it. The form is keyed by mode, so leaving edit discards changes. After a mode switch, focus moves to the new content (name field or the header Edit button), because the focused button was removed.
 - Saving uses `mutate(..., { onSuccess, onError })`, so a dialog closed mid-save never navigates. Cache updates and the toast live in the `useMutation` options.
 
-**Dialog** (`shared/ui/dialog`): built on the native `<dialog>` + `showModal()`. Its `close` handler ignores events that arrive while the dialog is open again (StrictMode remount).
+**Dialog** (`shared/ui/dialog`): built on the native `<dialog>` + `showModal()`. Its `close` handler ignores events that arrive while the dialog is open again (StrictMode remount). `actions` adds header controls before ×. Esc, the close button and `useCloseDialog()` (for content such as Save/Cancel) set `data-closing`, wait for the dialog's own animations (`afterOwnAnimations` in `shared/lib`; not its subtree: a spinner never finishes), then call `onClose`; calling the parent's `onClose` directly skips the exit animation. Durations are the `--transition-enter/exit` tokens, 0 ms with reduced motion. While open, it sets `scrollbar-gutter: stable` on `<html>` if the page had a scrollbar, because the scroll lock in `global.css` would otherwise shift the page.
+
+**Toasts** (`shared/ui/toast`) use the same motion: the timeout and the × button set `data-closing` on the toast and call the store's `dismiss` only after `afterOwnAnimations`; calling `dismiss` directly skips the exit animation.
 
 **i18n** (`shared/i18n`):
-- `locales/pl.ts` is the typed source of keys (`i18next.d.ts`). `en.ts` must `satisfies LocaleMessages`, and a test checks that both have the same keys.
-- Plural suffixes differ per language: pl has `_one/_few/_many/_other`, en has `_one/_other`.
+- `locales/pl.ts` is the typed source of keys (`i18next.d.ts`). Other locales must `satisfies LocaleMessages`.
+- `languages.ts` is the single registry of languages (code, own name, flag, Intl locale, messages). To add a language, add `locales/<code>.ts`, a 4:3 `flags/<country>.svg` and one registry entry; the dropdown, i18next resources and formatters follow.
+- The language dropdown (`features/switch-language`) is a custom select-only combobox (WAI-ARIA APG), not a native `<select>`. Focus stays on the trigger and the highlighted option is set with `aria-activedescendant`, so blur closes the list; the listbox prevents `mousedown` so clicking an option does not blur. Flags are SVG files, not emoji, because Windows shows emoji flags as letters.
+- Tests check that every registered locale has the same keys as pl, and exactly the plural suffixes `Intl.PluralRules` reports for it (pl: `_one/_few/_many/_other`, en: `_one/_other`).
+- Language names are not translation keys: the dropdown shows each language in its own name.
 - Use `useFormatters()` for dates, relative time, km/h and locale-aware sorting.
 
 **React Compiler is on.** Don't add manual memoization. Don't pass mutable library objects (TanStack Table header, row or column objects; the TanStack Form field API) into child components; pass the primitive values the child needs instead. Table cells render through `VehicleCell` by column id; column defs contain no JSX.
@@ -80,8 +89,10 @@ npm run test:visual:update                               # re-record baselines a
 
 **Styling**:
 - CSS Modules, with design tokens in `src/app/styles/tokens.css`. The app is dark only.
-- Breakpoints are mobile first: 768 / 1024 / 1280 / 1536 px; the container is capped at 1440 px.
-- Below 768 px is an intentional emergency mode with fewer features: vehicle cards, no sorting or "Show on map", compact map list.
+- Scrollbars are styled once in `global.css` (thin, `--color-scrollbar-thumb` on a transparent track); don't add per-component scrollbar styles.
+- Breakpoints are mobile first: 768 / 1024 / 1280 / 1536 px; the container is capped at 2560 px.
+- Below 768 px is a reduced mode: compact vehicle cards (name, plate, driver) that open details on tap, "Show on map" in the card's header row, no sorting; compact map list. Card layout is CSS only (`VehiclesTable.module.css`, grid areas): cards hide the other columns, and the name truncates before "Show on map". Rows render both a details link and Edit; on cards the details link (`.cardLink`) is stretched over the whole card (`.row` is `position: relative`) and "Show on map" sits above it (`z-index`); in the table only Edit shows. The desktop `.table .cell` selector is more specific on purpose, to undo the card hiding.
+- Long API text in table cells and the map list goes through `TruncatedText` (`shared/ui`; ellipsis + `title`). The table's per-column `max-width` caps (in `ch`) are in `VehiclesTable.module.css`; on cards and in the map list the container width is the limit (the list's plate also has a 12ch cap).
 
 ## Testing conventions
 
@@ -95,6 +106,7 @@ npm run test:visual:update                               # re-record baselines a
   - `stubApi(overrides)` replaces `fetch` with routes keyed `"METHOD /path"`; unknown routes return 404, and `routes` is mutable mid-test.
   - `renderWithProviders` uses a catch-all memory router; `renderWithQuery` has no router.
   - Typed fixtures.
+  - `holdAnimation(element)` gives an element one running animation (jsdom has none, so `afterOwnAnimations` calls back at once) and returns `finish()`; use it to test what happens during an exit or collapse.
   - `fakeSignalRModule` is used with `vi.mock('@microsoft/signalr', async () => (await import('@/shared/test')).fakeSignalRModule())`.
 - `renderApp(path)` (`src/app/test`) renders the real route tree.
 - MapLibre cannot run in jsdom: tests mock `react-map-gl/maplibre` or `@/widgets/vehicle-map`, and coverage excludes the map canvas and animation files.
