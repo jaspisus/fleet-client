@@ -1,0 +1,273 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'title count'
+    'search search';
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.title {
+  grid-area: title;
+  font-size: var(--font-size-xl);
+}
+
+.search {
+  grid-area: search;
+}
+
+.count {
+  grid-area: count;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.name {
+  font-weight: var(--font-weight-bold);
+}
+
+.plate {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.02em;
+}
+
+.muted {
+  color: var(--color-text-subtle);
+}
+
+.rowActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.sortIndicator {
+  color: var(--color-text-subtle);
+  font-size: 0.7em;
+}
+
+.sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sortButton:hover {
+  color: var(--color-text);
+}
+
+th[aria-sort] .sortIndicator {
+  color: var(--color-accent);
+}
+
+/*
+ * Mobile first (emergency access): every row is a card with the essentials and the Edit action.
+ * The header row is hidden; each cell shows its column name from data-label instead.
+ */
+.table,
+.table tbody,
+.row,
+.cell {
+  display: block;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Sorting is not part of the emergency layout; display: none also keeps the buttons unfocusable. */
+.head {
+  display: none;
+}
+
+.table tbody {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.cell {
+  min-width: 0;
+  font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.cell::before {
+  content: attr(data-label);
+  display: block;
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-xs);
+}
+
+.cell[data-column='name'] {
+  grid-column: 1 / -1;
+  font-size: var(--font-size-md);
+}
+
+.cell[data-column='name']::before,
+.cell[data-column='actions']::before {
+  content: none;
+}
+
+.cell[data-column='actions'] {
+  grid-column: 1 / -1;
+}
+
+.hiddenOnMobile,
+.rowActions .mapAction {
+  display: none;
+}
+
+/* Tablets and up: the full table, scrolling sideways until it fits (1024px+). */
+@media (min-width: 768px) {
+  .scroller {
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+  }
+
+  .table {
+    display: table;
+    min-width: 980px;
+  }
+
+  .head {
+    display: table-header-group;
+  }
+
+  .table tbody {
+    display: table-row-group;
+  }
+
+  .row {
+    display: table-row;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  .row:hover {
+    background: var(--color-surface-hover);
+  }
+
+  .table th,
+  .cell {
+    display: table-cell;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .table th {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .row:last-child .cell {
+    border-bottom: 0;
+  }
+
+  .cell::before,
+  .cell[data-column='name']::before {
+    content: none;
+  }
+
+  .cell[data-column='name'] {
+    font-size: var(--font-size-sm);
+  }
+
+  .hiddenOnMobile {
+    display: table-cell;
+  }
+
+  .rowActions .mapAction {
+    display: inline-flex;
+  }
+
+  /* The vehicle name stays visible while the table scrolls sideways. */
+  .table th[data-column='name'],
+  .cell[data-column='name'] {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--color-surface);
+  }
+
+  /* ...and so do the actions, so Edit is reachable without scrolling. */
+  .table th[data-column='actions'],
+  .cell[data-column='actions'] {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background: var(--color-surface);
+  }
+
+  .row:hover .cell[data-column='name'],
+  .row:hover .cell[data-column='actions'] {
+    background: var(--color-surface-hover);
+  }
+
+  .cell[data-column='actions'] {
+    text-align: right;
+  }
+
+  .rowActions {
+    justify-content: flex-end;
+  }
+}
+
+@media (min-width: 1024px) {
+  .toolbar {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: 'title search count';
+  }
+
+  .search {
+    justify-self: end;
+    width: min(100%, 360px);
+  }
+
+  .table {
+    min-width: 0;
+  }
+}
