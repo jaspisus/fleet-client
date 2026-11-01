@@ -3,8 +3,6 @@ import type { Fleet } from '@/entities/fleet'
 import type { Vehicle, VehicleDictionaries } from '@/entities/vehicle'
 import type { LiveTrackPosition } from '@/entities/vehicle-position'
 
-// Fictional data shaped like the examples in API.md.
-
 export const fleets: Fleet[] = [
   { id: 'fleet-gdynia', name: 'Dostawy Gdynia' },
   { id: 'fleet-gdansk', name: 'Serwis Gdańsk' },

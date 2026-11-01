@@ -12,7 +12,6 @@ const ToastItem = ({ toast }: { toast: Toast }) => {
   const itemRef = useRef<HTMLLIElement>(null)
   const isClosingRef = useRef(false)
 
-  // Plays the exit animation before the toast leaves the store.
   const requestDismiss = () => {
     const item = itemRef.current
     if (!item || isClosingRef.current) return

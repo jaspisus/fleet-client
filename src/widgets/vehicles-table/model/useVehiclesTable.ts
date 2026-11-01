@@ -49,7 +49,6 @@ export const useVehiclesTable = ({
   const labels = useVehicleLabels()
   const { compare } = useFormatters()
 
-  // Text columns sort with the locale's collation; translated enums sort by their label.
   const compareText: SortFn<typeof features, Vehicle> = (rowA, rowB, columnId) =>
     compare(String(rowA.getValue(columnId)), String(rowB.getValue(columnId)))
   const sortText = { sortFn: compareText }

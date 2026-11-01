@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Fleet dispatcher app (task: `Zadanie.md`, stack: `STACK.md`, API: `API.md`): a vehicle table with an edit dialog, and a live map (SignalR) with a vehicle list whose selection syncs with the map. Code, comments and README are in English; the UI defaults to Polish, with a PL/EN dropdown.
+Fleet dispatcher app (task: `docs/Zadanie.md`, stack: `docs/STACK.md`, API: `docs/API.md`): a vehicle table with an edit dialog, and a live map (SignalR) with a vehicle list whose selection syncs with the map. Code, comments and README are in English; the UI defaults to Polish, with a PL/EN dropdown.
 
 ## Commands
 
@@ -20,13 +20,16 @@ npm run test:coverage                                    # thresholds in vite.co
 
 npm run test:e2e                                         # Playwright functional: projects e2e-desktop (1440) and e2e-mobile (390)
 npx playwright test --project=e2e-desktop e2e/edit-vehicle.e2e.ts -g "deep link"
-npm run test:visual                                      # projects visual-390 … visual-2560
-npm run test:visual:update                               # re-record baselines after an intended UI change
+npm run test:visual                                      # projects visual-390 … visual-2560, in Docker (must be running)
+npm run test:visual:update                               # re-record all baselines after an intended UI change
+npm run check                                            # lint, format:check, typecheck, test:coverage, test:e2e, test:visual
 ```
 
 - The first Playwright run needs `npx playwright install chromium`.
+- Pre-commit hook (`.githooks/pre-commit`, enabled by `prepare` via `core.hooksPath`): exports the index to a temp dir, links `node_modules` entry by entry (not `.tmp`/`.vite`, so tsc and Vite caches stay separate) and runs `CI=1 npm run check` there. So a commit fails while tests are out of date with the code; the user decides whether to use `--no-verify`, never add it on your own. On failure the temp dir with reports is kept.
 - Playwright builds `dist-e2e` with `--mode e2e` and serves it on port 4179. Locally it reuses a server that is already running there, which may still be serving an old build.
-- Visual baselines (`e2e/__screenshots__/<project>/*-darwin.png`) exist only for macOS.
+- Visual tests run only in Docker: the `visual-*` projects exist only when `VISUAL_DOCKER` is set, which `scripts/test-visual-docker.sh` does. Baselines are `e2e/__screenshots__/<project>/<name>.png`, with no platform suffix.
+- The script uses the image tag matching the installed `@playwright/test`, keeps Linux `node_modules` in a Docker volume (`npm ci` reruns when `package-lock.json` changes) and mounts `e2e/support/fonts.conf`: without it the image renders `system-ui` with a CJK font that breaks Polish diacritics.
 
 ## Architecture
 
@@ -67,7 +70,7 @@ npm run test:visual:update                               # re-record baselines a
 
 **Edit form** (`features/edit-vehicle`, TanStack Form):
 - Validation is one form-level `onDynamic` validator (`validateVehicleForm`) with `revalidateLogic({ mode: 'submit', modeAfterSubmission: 'change' })`. Do not switch to blur validation: errors appearing on blur moved the Save button away mid-click.
-- Validators return translation keys. `serverErrors.ts` maps the API's English messages (all listed in API.md) to the same keys.
+- Validators return translation keys. `serverErrors.ts` maps the API's English messages (all listed in docs/API.md) to the same keys.
 - `readOnly` disables the fieldset and hides Save/Cancel; the details dialog uses it. The form is keyed by mode, so leaving edit discards changes. After a mode switch, focus moves to the new content (name field or the header Edit button), because the focused button was removed.
 - Saving uses `mutate(..., { onSuccess, onError })`, so a dialog closed mid-save never navigates. Cache updates and the toast live in the `useMutation` options.
 

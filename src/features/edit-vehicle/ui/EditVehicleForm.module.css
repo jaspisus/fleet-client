@@ -14,7 +14,6 @@
   min-width: 0;
 }
 
-/* Details mode: locked fields read as values, not as dimmed, unavailable controls. */
 .readOnly :is(input, select):disabled {
   opacity: 1;
   cursor: default;

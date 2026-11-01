@@ -1,4 +1,3 @@
-// Resets every Zustand store after each test (the setup recommended by the Zustand docs).
 import { act } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 import type * as ZustandExportedTypes from 'zustand'

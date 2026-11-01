@@ -1,7 +1,5 @@
 import { expect, test } from './support/test'
 
-// Below 768 px is a reduced layout: compact cards instead of a table and no sorting. A card opens
-// the vehicle's details, where the key tasks must still work.
 test.describe('mobile reduced mode', () => {
   test('shows a compact vehicle card', async ({ page }) => {
     await page.goto('/vehicles')

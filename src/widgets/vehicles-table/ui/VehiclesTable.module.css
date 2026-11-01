@@ -4,7 +4,6 @@
   gap: var(--space-4);
 }
 
-/* Title with the count under it; the search goes below on phones and to the right edge above. */
 .toolbar {
   display: flex;
   flex-direction: column;
@@ -60,25 +59,18 @@
   display: none;
 }
 
-/* Stretched over the card (positioned against .row); its focus ring outlines the whole card. */
 .cardLink {
   position: absolute;
   inset: 0;
   border-radius: inherit;
 }
 
-/*
- * Stays above the card link, so it does not open details. On cards, negative margins cancel the
- * button's own padding, so its text lines up with the card content and the row is no taller
- * than the name.
- */
 .mapAction {
   position: relative;
   z-index: 1;
   margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-3)) calc(-1 * var(--space-1)) 0;
 }
 
-/* Both arrows are always drawn; the one matching the sort direction is highlighted. */
 .sortIndicator {
   flex: none;
   width: 0.63em;
@@ -111,11 +103,6 @@
   color: var(--color-text);
 }
 
-/*
- * Mobile first: every row is a compact card with the name, registration, driver and "On map", but
- * no sorting; tapping the card opens details with the rest. The header row is hidden; each cell shows its column name
- * from data-label instead.
- */
 .table,
 .table tbody,
 .row,
@@ -128,7 +115,6 @@
   border-collapse: collapse;
 }
 
-/* Sorting is not part of the emergency layout; display: none also keeps the buttons unfocusable. */
 .head {
   display: none;
 }
@@ -141,7 +127,6 @@
 .row {
   position: relative;
   display: grid;
-  /* The header row is the name, truncated before "On map". */
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   grid-template-areas:
     'name name actions'
@@ -203,7 +188,6 @@
   grid-area: actions;
 }
 
-/* Tablets and up: the full table, scrolling sideways until it fits (1024px+). */
 @media (min-width: 768px) {
   .toolbar {
     flex-direction: row;
@@ -280,11 +264,6 @@
     font-size: var(--font-size-sm);
   }
 
-  /*
-   * Column caps for API text, sized for realistic values: names like "Kurier Wrzeszcz", Polish
-   * plates (8 characters plus a space; the API allows 50), "Toyota Corolla Touring Sports",
-   * double-barrelled driver surnames.
-   */
   .cell[data-column='name'] > * {
     max-width: 24ch;
   }
@@ -305,7 +284,6 @@
     max-width: 26ch;
   }
 
-  /* The vehicle name stays visible while the table scrolls sideways. */
   .table th[data-column='name'],
   .cell[data-column='name'] {
     position: sticky;
@@ -314,7 +292,6 @@
     background: var(--color-surface);
   }
 
-  /* ...and so do the actions, so Edit is reachable without scrolling. */
   .table th[data-column='actions'],
   .cell[data-column='actions'] {
     position: sticky;

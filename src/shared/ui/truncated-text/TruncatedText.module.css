@@ -1,4 +1,3 @@
-/* The parent's width is the limit; callers add a `max-width` to cap it further. */
 .truncate {
   display: block;
   overflow: hidden;

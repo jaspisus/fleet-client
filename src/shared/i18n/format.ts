@@ -12,7 +12,6 @@ const cached = <T>(create: (locale: string) => T) => {
   }
 }
 
-// Short style ("40 sek. temu"): the label sits in one line of the map list and changes as time passes.
 const relativeTimeFormat = cached(
   (locale) => new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' }),
 )

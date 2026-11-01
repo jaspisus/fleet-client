@@ -6,10 +6,8 @@ import prettierRecommended from 'eslint-plugin-prettier/recommended'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
-// Feature-Sliced Design: a layer may import only from layers below it.
 const LAYERS = ['app', 'pages', 'widgets', 'features', 'entities', 'shared']
 
-// Slices are consumed through their public API (index.ts) only.
 const publicApiPatterns = [
   {
     group: ['@/pages/*/*', '@/widgets/*/*', '@/features/*/*', '@/entities/*/*', '@/shared/*/*'],

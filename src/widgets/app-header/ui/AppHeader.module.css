@@ -7,7 +7,6 @@
   background: var(--color-surface);
 }
 
-/* Mobile: brand and language on the first row, navigation tabs on the second. */
 .inner {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -75,7 +74,6 @@
   color: var(--color-text);
 }
 
-/* One underline anchored to the active tab, so it slides when the tab changes. */
 @supports (anchor-name: --active-nav-link) {
   .nav {
     position: relative;

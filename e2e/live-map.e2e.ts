@@ -36,14 +36,13 @@ test.describe('live map', () => {
     await expect(listItem(page, 'Sprinter 01')).toHaveAttribute('aria-pressed', 'true')
     await expect(vehicleList(page)).toContainText('Anna Nowak')
 
-    // The vehicle in the middle of the initial view; wait until the map has drawn it.
     await expect(listItem(page, MAP_CENTER_VEHICLE)).toContainText('W ruchu')
+    // The canvas gives no signal when a marker has been drawn.
     await page.waitForTimeout(500)
     await map.locator('canvas').click()
     await expect(listItem(page, MAP_CENTER_VEHICLE)).toHaveAttribute('aria-pressed', 'true')
     await expect(listItem(page, 'Sprinter 01')).toHaveAttribute('aria-pressed', 'false')
 
-    // A click on the empty map clears the selection.
     const box = await map.locator('canvas').boundingBox()
     await map.locator('canvas').click({ position: { x: 20, y: (box?.height ?? 200) - 20 } })
     await expect(vehicleList(page).getByRole('button', { pressed: true })).toHaveCount(0)

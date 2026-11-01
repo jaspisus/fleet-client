@@ -183,7 +183,6 @@ describe('EditVehicleForm', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Popraw zaznaczone pola')
     expect(onSaved).not.toHaveBeenCalled()
 
-    // Editing the field makes its server error outdated.
     await user.type(field('Numer rejestracyjny'), '1')
     expect(
       screen.queryByText('Ten numer rejestracyjny ma już inny pojazd.'),

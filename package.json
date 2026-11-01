@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "prepare": "git config core.hooksPath .githooks || true",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -15,8 +16,9 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test --project=e2e-desktop --project=e2e-mobile",
-    "test:visual": "playwright test --project=\"visual-*\"",
-    "test:visual:update": "playwright test --project=\"visual-*\" --update-snapshots"
+    "test:visual": "./scripts/test-visual-docker.sh",
+    "test:visual:update": "./scripts/test-visual-docker.sh --update-snapshots=all",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test:coverage && npm run test:e2e && npm run test:visual"
   },
   "dependencies": {
     "@microsoft/signalr": "^10.0.11",
