@@ -3,7 +3,6 @@ import { apiRequest, type ResourceCollection } from '@/shared/api'
 
 export interface Driver {
   id: string
-  /** Full name, e.g. "Anna Nowak". */
   name: string
   firstName: string
   lastName: string

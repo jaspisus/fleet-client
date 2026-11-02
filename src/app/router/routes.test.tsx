@@ -111,7 +111,9 @@ describe('edit vehicle dialog', () => {
     ).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/vehicles')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.getByRole('cell', { name: 'Sprinter 01 – chłodnia' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('cell', { name: /^Furgon\s?Sprinter 01 – chłodnia$/ }),
+    ).toBeInTheDocument()
   })
 
   it('cannot be closed while saving', async () => {

@@ -16,7 +16,7 @@ test.describe('mobile reduced mode', () => {
   test('truncates a long name before "On map"', async ({ page }) => {
     await page.goto('/vehicles')
     const card = page.getByRole('row', { name: /Sprinter 01/ })
-    const name = card.getByRole('cell').first().locator('> *')
+    const name = card.getByRole('cell').first().getByTitle('Sprinter 01', { exact: true })
     await name.evaluate((element) => {
       element.textContent = 'Sprinter 01 – chłodnia z windą, Dostawy Gdynia Północ'
     })
@@ -74,7 +74,9 @@ test.describe('mobile reduced mode', () => {
 
     await expect(page).toHaveURL(/\/map$/)
     await expect(
-      page.getByRole('list', { name: 'Pojazdy' }).getByRole('button', { name: /^Sprinter 02/ }),
+      page
+        .getByRole('list', { name: 'Pojazdy' })
+        .getByRole('button', { name: /^\p{L}[\p{L} ]*?Sprinter 02/u }),
     ).toHaveAttribute('aria-pressed', 'true')
   })
 
@@ -84,7 +86,7 @@ test.describe('mobile reduced mode', () => {
     await expect(map).toBeVisible()
 
     const item = page.getByRole('list', { name: 'Pojazdy' }).getByRole('button', {
-      name: /^Sprinter 01/,
+      name: /^\p{L}[\p{L} ]*?Sprinter 01/u,
     })
     await item.click()
 

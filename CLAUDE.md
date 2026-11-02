@@ -29,7 +29,7 @@ npm run check                                            # lint, format:check, t
 - Pre-commit hook (`.githooks/pre-commit`, enabled by `prepare` via `core.hooksPath`): exports the index to a temp dir, links `node_modules` entry by entry (not `.tmp`/`.vite`, so tsc and Vite caches stay separate) and runs `CI=1 npm run check` there. So a commit fails while tests are out of date with the code; the user decides whether to use `--no-verify`, never add it on your own. On failure the temp dir with reports is kept.
 - Playwright builds `dist-e2e` with `--mode e2e` and serves it on port 4179. Locally it reuses a server that is already running there, which may still be serving an old build.
 - Visual tests run only in Docker: the `visual-*` projects exist only when `VISUAL_DOCKER` is set, which `scripts/test-visual-docker.sh` does. Baselines are `e2e/__screenshots__/<project>/<name>.png`, with no platform suffix.
-- The script uses the image tag matching the installed `@playwright/test`, keeps Linux `node_modules` in a Docker volume (`npm ci` reruns when `package-lock.json` changes) and mounts `e2e/support/fonts.conf`: without it the image renders `system-ui` with a CJK font that breaks Polish diacritics.
+- The script uses the image tag matching the installed `@playwright/test`, keeps Linux `node_modules` in a Docker volume (`npm ci` reruns when `package-lock.json` changes) and mounts `e2e/support/fonts.conf`: without it the image renders `system-ui` with a CJK font that breaks Polish diacritics. The app fonts are self-hosted now, so it only matters for fallback text (e.g. before the woff2 loads).
 
 ## Architecture
 
@@ -65,6 +65,7 @@ npm run check                                            # lint, format:check, t
 - Markers are not React-driven. `useAnimatedVehicles` runs a rAF loop that calls `source.setData()` on the GeoJSON source, interpolating between reports (`lib/interpolation.ts`). The `<Source data={EMPTY_FEATURE_COLLECTION}>` prop is constant on purpose.
 - `lib/maplibre.ts` sets the MapLibre worker URL. This is required: with Vite bundling, MapLibre 6 cannot find its worker otherwise.
 - Layer specs and the SDF arrow icon are in `lib/layers.ts`.
+- `lib/basemap.ts` (`recolorBasemap`, called in `onLoad`) repaints the OpenFreeMap style in the app palette. It matches layers by `source-layer` (OpenMapTiles schema) and id fragments (`casing`, `motorway`, `major`, `dashline`, `park`); unknown layers keep their style. MapLibre controls are restyled with `:global(.maplibregl-…)` in `VehicleMap.module.css`.
 
 **Map list** (`widgets/tracking-list`): the selected item's details expand by animating `grid-template-rows` from `0fr` to `1fr`. The panel is always rendered; its content mounts on selection and unmounts only after the collapse transition (`afterOwnAnimations`). Scrolling the selected item into view also waits for the expansion, so the whole panel is visible. The open card hovers as one and a click on its details collapses it too (pointer only; the button stays the keyboard/AT control, and a click that ends a text selection is ignored). The meta line (plate, speed, report time) never wraps: the report time re-renders every 10 s, and wrapping made rows jump. Only the report time shrinks (ellipsis), and relative time uses the short `Intl` style ("40 sek. temu").
 
@@ -92,10 +93,18 @@ npm run check                                            # lint, format:check, t
 
 **Styling**:
 - CSS Modules, with design tokens in `src/app/styles/tokens.css`. The app is dark only.
+- Palette: `--palette-sand/ember/teal/abyss`; semantic tokens map onto it. Ember (`--color-accent`) is for fills only: as small text it fails AA, so text accents and focus use sand (`--color-highlight`, `--color-focus`).
+- Corners are sharp by design: `--radius-sm/md/lg` are 0. Only status dots and map markers are round.
+- The grainy gradient is for accents only (brand mark, primary button, active-nav bar, the dialog's top band): `--gradient-signature` / `--gradient-accent` plus `--noise-texture` (SVG `feTurbulence`) in an `::after` with `mix-blend-mode: overlay`, or as a second background with `background-blend-mode`. Do not put it on page backgrounds or panels.
+- The active-nav bar (`AppHeader.module.css`) is one signature gradient spanning all tabs (`.nav::before`; the nav fits its tabs), with an anchor-positioned `::after` that slides to the active link and hides the rest by painting `--color-bg` through a clipped `box-shadow`. So the header background must stay a solid `--color-bg`.
+- Fonts are self-hosted variable woff2 (Schibsted Grotesk, JetBrains Mono, latin + latin-ext) in `src/app/styles/fonts/`, declared in `fonts.css`. Do not set `tabular-nums` broadly: Schibsted makes punctuation tabular too (commas get gaps); it is set only on numeric columns.
+- The vehicle list's loading state is `VehiclesLoader` (`widgets/vehicles-table`): a marker drives an SVG route (CSS `offset-path`; the scene is a fixed 320×120 px, so path units are pixels). It stays for a hardcoded `LOADER_DURATION_MS` (2.2 s: the marker has just reached the destination; it depends on `--loader-cycle` and the keyframe percentages, so change them together) or until the data arrives, whichever is later; `onFinish` then fires. With reduced motion it waits only for the data. jsdom has no `matchMedia`, so the timer runs there: tests use fake timers or `stubReducedMotion()` (`@/shared/test`). Until then the table stays in its loading state (`isLoading = isPending || !loaderFinished`). While loading, the heading and count are only visually hidden (the `h1` labels the section and the count is a live region that must exist before it changes); the search is not rendered. A table mounted while loading gets `.reveal`, a one-time rise of heading, search and table.
+- Vehicle type icons: one SVG file per type in `entities/vehicle/ui/icons/` (viewBox 32×20, black strokes). `VehicleTypeIcon` uses the file as a CSS `mask` over `background-color: currentcolor`, so the icon takes the text colour; an `<img>` could not. It is `role="img"` labelled with the translated type, so it is part of the name cell's and the map list button's accessible name. Shown before the name in the table (incl. cards) and the map list (sand when selected).
+- Registration numbers are styled as plate chips (mono, teal border with a thicker left band) in both `VehiclesTable.module.css` and `TrackingList.module.css`; keep them alike.
 - Scrollbars are styled once in `global.css` (thin, `--color-scrollbar-thumb` on a transparent track); don't add per-component scrollbar styles.
 - Breakpoints are mobile first: 768 / 1024 / 1280 / 1536 px; the container is capped at 2560 px.
 - Below 768 px is a reduced mode: compact vehicle cards (name, plate, driver) that open details on tap, "Show on map" in the card's header row, no sorting; compact map list. Card layout is CSS only (`VehiclesTable.module.css`, grid areas): cards hide the other columns, and the name truncates before "Show on map". Rows render both a details link and Edit; on cards the details link (`.cardLink`) is stretched over the whole card (`.row` is `position: relative`) and "Show on map" sits above it (`z-index`); in the table only Edit shows. The desktop `.table .cell` selector is more specific on purpose, to undo the card hiding.
-- Long API text in table cells and the map list goes through `TruncatedText` (`shared/ui`; ellipsis + `title`). The table's per-column `max-width` caps (in `ch`) are in `VehiclesTable.module.css`; on cards and in the map list the container width is the limit (the list's plate also has a 12ch cap).
+- Long API text in table cells and the map list goes through `TruncatedText` (`shared/ui`; ellipsis + `title`). The table's per-column `max-width` caps (in `ch`) are in `VehiclesTable.module.css`; on cards and in the map list the container width is the limit (the list's plate also has a 14ch cap).
 
 ## Testing conventions
 
@@ -105,10 +114,12 @@ npm run check                                            # lint, format:check, t
   - resets i18n to Polish and clears `localStorage` before each test;
   - runs with `TZ=UTC`.
 - Assertions use the Polish UI text.
+- The type icon's label comes first in the name cell's and the map list button's accessible name (jsdom joins it with no space: "FurgonSprinter 01…"), so match them with `/^\p{L}[\p{L} ]*?Sprinter 01/u`, not `/^Sprinter 01/`. The same holds in Playwright.
 - Helpers in `@/shared/test`:
   - `stubApi(overrides)` replaces `fetch` with routes keyed `"METHOD /path"`; unknown routes return 404, and `routes` is mutable mid-test.
   - `renderWithProviders` uses a catch-all memory router; `renderWithQuery` has no router.
   - Typed fixtures.
+  - `stubReducedMotion()` makes `(prefers-reduced-motion: reduce)` match (jsdom has no `matchMedia`); restored after each test.
   - `holdAnimation(element)` gives an element one running animation (jsdom has none, so `afterOwnAnimations` calls back at once) and returns `finish()`; use it to test what happens during an exit or collapse.
   - `fakeSignalRModule` is used with `vi.mock('@microsoft/signalr', async () => (await import('@/shared/test')).fakeSignalRModule())`.
 - `renderApp(path)` (`src/app/test`) renders the real route tree.

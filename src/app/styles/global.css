@@ -1,3 +1,4 @@
+@import './fonts.css';
 @import './tokens.css';
 
 *,
@@ -46,14 +47,16 @@ h1,
 h2,
 h3 {
   line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-title);
 }
 
 a {
-  color: var(--color-accent);
+  color: var(--color-highlight);
+  text-underline-offset: 0.2em;
 }
 
 a:hover {
-  color: var(--color-accent-hover);
+  color: var(--color-text);
 }
 
 button,

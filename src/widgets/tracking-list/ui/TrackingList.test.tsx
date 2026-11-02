@@ -27,7 +27,8 @@ const renderList = (selectedVehicleId: string | null = null) => {
   return { onSelect, select: (id: string | null) => view.rerender(list(id)) }
 }
 
-const item = (name: string) => screen.getByRole('button', { name: new RegExp(`^${name}`) })
+const item = (name: string) =>
+  screen.getByRole('button', { name: new RegExp(`^\\p{L}[\\p{L} ]*?${name}`, 'u') })
 const detailsPanel = (name: string) => item(name).nextElementSibling as HTMLElement
 
 describe('TrackingList', () => {
@@ -44,6 +45,13 @@ describe('TrackingList', () => {
     expect(item('Sprinter 01')).toHaveTextContent('Raport teraz')
     expect(item('Sprinter 02')).toHaveTextContent('Raport 3 dni temu')
     expect(item('Transit 05')).toHaveTextContent('Brak pozycji')
+  })
+
+  it('names each vehicle by its type icon and name', () => {
+    renderList()
+
+    expect(item('Sprinter 01')).toHaveAccessibleName(/^Furgon\s?Sprinter 01\s?W ruchu/)
+    expect(within(item('Sprinter 01')).getByRole('img', { name: 'Furgon' })).toBeInTheDocument()
   })
 
   it('puts the full text of values that may be cut in a tooltip', () => {

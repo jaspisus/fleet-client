@@ -39,6 +39,7 @@ export const pl = {
     title: 'Pojazdy',
     searchLabel: 'Szukaj pojazdów',
     searchPlaceholder: 'Nazwa, rejestracja, kierowca, flota…',
+    loading: 'Ładowanie pojazdów…',
     count_one: '{{count}} pojazd',
     count_few: '{{count}} pojazdy',
     count_many: '{{count}} pojazdów',

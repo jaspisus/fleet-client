@@ -10,4 +10,5 @@ export {
   type StubbedRequest,
 } from './fetchStub'
 export * from './fixtures'
+export { stubReducedMotion } from './media'
 export { createTestQueryClient, renderWithProviders, renderWithQuery } from './render'

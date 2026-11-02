@@ -1,6 +1,6 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { useState } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useSelectionStore } from '@/features/select-vehicle'
 import {
   eTransit,
@@ -10,6 +10,7 @@ import {
   renderWithProviders,
   sprinter01,
   stubApi,
+  stubReducedMotion,
 } from '@/shared/test'
 import type { VehicleSort } from '../model/columns'
 import { VehiclesTable } from './VehiclesTable'
@@ -42,11 +43,16 @@ const vehicleNames = () =>
     .map((row) => within(row).getAllByRole('cell')[0]?.textContent)
 
 describe('VehiclesTable', () => {
-  it('shows a loading state', async () => {
+  beforeEach(() => {
+    stubReducedMotion()
+  })
+
+  it('shows a loading state without the search', async () => {
     stubApi({ 'GET /api/vehicles': pendingResponse })
     renderWithProviders(<Harness />)
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Ładowanie…')
+    expect(await screen.findByRole('status')).toHaveTextContent('Ładowanie pojazdów…')
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
     // The count's live region exists before the list loads, so its first text is announced.
     const count = screen.getByRole('heading', { level: 1, name: 'Pojazdy' }).nextElementSibling
     expect(count).toHaveAttribute('aria-live', 'polite')
@@ -61,6 +67,9 @@ describe('VehiclesTable', () => {
     expect(vehicleNames()).toEqual(['Sprinter 01', 'Sprinter 02', 'e-Transit Sopot', 'Transit 05'])
     const row = screen.getByRole('row', { name: /e-Transit Sopot/ })
     expect(within(row).getByText('Mała ciężarówka')).toBeInTheDocument()
+    expect(within(row).getAllByRole('cell')[0]).toHaveAccessibleName(
+      /^Mała ciężarówka\s?e-Transit Sopot$/,
+    )
     expect(within(row).getByText('Elektryczny')).toBeInTheDocument()
     expect(within(row).getByText('Ford E-Transit')).toBeInTheDocument()
     expect(
@@ -175,5 +184,18 @@ describe('VehiclesTable', () => {
     await user.click(screen.getByRole('button', { name: 'Spróbuj ponownie' }))
 
     expect(await screen.findByText('1 pojazd')).toBeInTheDocument()
+  })
+})
+
+describe('VehiclesTable with motion', () => {
+  it('keeps the loader after the data arrives, until the loader finishes', async () => {
+    stubApi()
+    const { queryClient } = renderWithProviders(<Harness />)
+
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0))
+
+    expect(screen.getByRole('status')).toHaveTextContent('Ładowanie pojazdów…')
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
   })
 })

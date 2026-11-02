@@ -1,51 +1,71 @@
 :root {
   color-scheme: dark;
 
-  --color-bg: #0e1116;
-  --color-surface: #151a21;
-  --color-surface-raised: #1b2129;
-  --color-surface-hover: #222934;
-  --color-surface-selected: #1d2b3f;
-  --color-surface-selected-hover: #233651;
-  --color-border: #2a313c;
-  --color-border-strong: #3a4352;
-  --color-backdrop: rgb(5 7 10 / 0.72);
-  --color-scrollbar-thumb: var(--color-border-strong);
+  --palette-sand: #f4c381;
+  --palette-ember: #d35f45;
+  --palette-teal: #27565d;
+  --palette-abyss: #061720;
 
-  --color-text: #e6e9ee;
-  --color-text-muted: #9aa4b2;
-  --color-text-subtle: #6f7a89;
+  --color-bg: var(--palette-abyss);
+  --color-surface: #0a2029;
+  --color-surface-raised: #0f2a33;
+  --color-surface-hover: #133440;
+  --color-surface-selected: #163c45;
+  --color-surface-selected-hover: #1b4650;
+  --color-border: #173640;
+  --color-border-strong: var(--palette-teal);
+  --color-backdrop: rgb(2 10 14 / 0.78);
+  --color-scrollbar-thumb: var(--palette-teal);
 
-  --color-accent: #4f9dff;
-  --color-accent-hover: #6cafff;
-  --color-accent-contrast: #08111f;
-  --color-focus: #8cbcff;
+  --color-text: #f2ebe1;
+  --color-text-muted: #a3b5b6;
+  --color-text-subtle: #7a9398;
+
+  --color-accent: var(--palette-ember);
+  --color-accent-hover: #e0735a;
+  --color-accent-contrast: var(--palette-abyss);
+  --color-highlight: var(--palette-sand);
+  --color-focus: var(--palette-sand);
 
   /* Keep in sync with STATUS_COLORS in entities/vehicle-position. */
-  --color-success: #3fb950;
-  --color-info: #58a6ff;
-  --color-warning: #d29922;
-  --color-danger: #f85149;
-  --color-neutral: #8b949e;
-  --color-success-soft: rgb(63 185 80 / 0.16);
-  --color-info-soft: rgb(88 166 255 / 0.16);
-  --color-warning-soft: rgb(210 153 34 / 0.16);
-  --color-danger-soft: rgb(248 81 73 / 0.16);
-  --color-neutral-soft: rgb(139 148 158 / 0.16);
+  --color-success: #6fd3bf;
+  --color-info: var(--palette-sand);
+  --color-warning: #e2704f;
+  --color-danger: #ff6b57;
+  --color-neutral: #7a9398;
+  --color-success-soft: rgb(111 211 191 / 0.14);
+  --color-info-soft: rgb(244 195 129 / 0.14);
+  --color-warning-soft: rgb(226 112 79 / 0.14);
+  --color-danger-soft: rgb(255 107 87 / 0.14);
+  --color-neutral-soft: rgb(122 147 152 / 0.14);
 
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --gradient-signature: linear-gradient(
+    120deg,
+    var(--palette-teal) 0%,
+    var(--palette-ember) 58%,
+    var(--palette-sand) 100%
+  );
+  --gradient-accent: linear-gradient(100deg, var(--palette-ember), var(--palette-sand));
+  --noise-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --noise-opacity: 0.4;
+
+  --font-sans:
+    'Schibsted Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
   --font-size-lg: 1.125rem;
-  --font-size-xl: 1.375rem;
-  --font-size-2xl: 1.75rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-bold: 650;
+  --font-weight-heavy: 800;
+  --letter-spacing-title: -0.025em;
   --line-height: 1.5;
-  --line-height-tight: 1.25;
+  --line-height-tight: 1.15;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -55,12 +75,12 @@
   --space-6: 2rem;
   --space-7: 3rem;
 
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
   --radius-pill: 999px;
-  --shadow-md: 0 4px 16px rgb(0 0 0 / 0.35);
-  --shadow-lg: 0 24px 64px rgb(0 0 0 / 0.55);
+  --shadow-md: 0 12px 32px rgb(0 0 0 / 0.45);
+  --shadow-lg: 0 32px 80px rgb(0 0 0 / 0.6);
 
   --container-max: 2560px;
   --gutter: clamp(16px, 4vw, 32px);
@@ -78,19 +98,19 @@
 
 @media (min-width: 768px) {
   :root {
-    --header-height: 56px;
+    --header-height: 60px;
   }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --map-list-width: 320px;
+    --map-list-width: 360px;
   }
 }
 
 @media (min-width: 1280px) {
   :root {
-    --map-list-width: 360px;
+    --map-list-width: 400px;
   }
 }
 

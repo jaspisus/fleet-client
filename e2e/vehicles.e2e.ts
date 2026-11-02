@@ -16,6 +16,19 @@ test.describe('vehicle table', () => {
     await expect(page).toHaveTitle('Pojazdy · Panel floty')
   })
 
+  test('shows the loading screen until the vehicle arrives, then the table', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.goto('/vehicles')
+
+    const loader = page.getByRole('status').filter({ hasText: 'Ładowanie pojazdów…' })
+    await expect(loader).toBeVisible()
+    await expect(page.getByRole('searchbox')).toHaveCount(0)
+
+    await expect(page.getByText('5 pojazdów')).toBeVisible()
+    await expect(loader).toHaveCount(0)
+    await expect(page.getByRole('searchbox', { name: 'Szukaj pojazdów' })).toBeVisible()
+  })
+
   test('sorts and searches, keeping both in the URL', async ({ page }) => {
     await page.goto('/vehicles')
 

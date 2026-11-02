@@ -12,8 +12,8 @@ export const TRICITY_BOUNDS: [[number, number], [number, number]] = [
   [18.72, 54.56],
 ]
 
-const MARKER_OUTLINE = '#0e1116'
-const HALO_COLOR = '#ffffff'
+const MARKER_OUTLINE = '#061720'
+const HALO_COLOR = '#f4c381'
 
 const statusColor: ExpressionSpecification = [
   'match',

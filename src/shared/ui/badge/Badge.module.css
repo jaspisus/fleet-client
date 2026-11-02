@@ -6,7 +6,6 @@
   align-items: center;
   gap: var(--space-1);
   padding: 2px var(--space-2);
-  border-radius: var(--radius-pill);
   background: var(--badge-background);
   color: var(--color-text);
   font-size: var(--font-size-xs);

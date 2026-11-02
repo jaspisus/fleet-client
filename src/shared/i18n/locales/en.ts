@@ -41,6 +41,7 @@ export const en = {
     title: 'Vehicles',
     searchLabel: 'Search vehicles',
     searchPlaceholder: 'Name, plate, driver, fleet…',
+    loading: 'Loading vehicles…',
     count_one: '{{count}} vehicle',
     count_other: '{{count}} vehicles',
     loadError: 'Could not load the vehicle list.',

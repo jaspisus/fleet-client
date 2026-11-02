@@ -12,6 +12,7 @@ import type { Vehicle } from '@/entities/vehicle'
 import { usePositionsStore, type PositionsById } from '@/entities/vehicle-position'
 import { MAP_STYLE_URL } from '@/shared/config'
 import { usePrefersReducedMotion } from '@/shared/lib'
+import { recolorBasemap } from '../lib/basemap'
 import { EMPTY_FEATURE_COLLECTION, getClickedVehicleId } from '../lib/features'
 import {
   addArrowImage,
@@ -73,6 +74,7 @@ export const VehicleMapCanvas = ({
   )
 
   const handleLoad = (event: MapEvent) => {
+    recolorBasemap(event.target)
     addArrowImage(event.target)
     setMap(event.target)
   }
