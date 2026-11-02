@@ -51,6 +51,9 @@ export default defineConfig({
       testMatch: /\.visual\.ts$/,
       use: { viewport: viewport(width) },
     })),
+    ...(process.env.README_SCREENSHOTS
+      ? [{ name: 'readme-screenshots', testMatch: /\.screenshots\.ts$/ }]
+      : []),
   ],
   // A production build whose API host (.env.e2e) only exists in the mocks: nothing real is hit.
   webServer: {
