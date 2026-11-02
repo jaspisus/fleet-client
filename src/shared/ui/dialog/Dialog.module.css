@@ -17,6 +17,14 @@
   animation: dialog-in var(--transition-enter) both;
 }
 
+.dialog::before {
+  content: '';
+  flex: none;
+  height: 4px;
+  background: var(--noise-texture), var(--gradient-signature);
+  background-blend-mode: overlay;
+}
+
 .dialog::backdrop {
   background: var(--color-backdrop);
 }
@@ -44,8 +52,8 @@
 }
 
 .title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-heavy);
   overflow-wrap: anywhere;
 }
 

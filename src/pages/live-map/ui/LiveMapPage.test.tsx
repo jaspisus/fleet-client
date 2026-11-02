@@ -43,7 +43,7 @@ vi.mock('@/widgets/vehicle-map', () => ({
 const connection = () => fakeConnections.at(-1) as FakeHubConnection
 const listItem = (name: string) =>
   within(screen.getByRole('list', { name: 'Pojazdy' })).getByRole('button', {
-    name: new RegExp(`^${name}`),
+    name: new RegExp(`^\\p{L}[\\p{L} ]*?${name}`, 'u'),
   })
 const marker = (name: string) =>
   within(screen.getByRole('region', { name: 'map' })).getByRole('button', {

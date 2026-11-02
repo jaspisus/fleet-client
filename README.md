@@ -50,14 +50,17 @@ Skip it once with `git commit --no-verify`.
 ## Tests
 
 **Unit and component tests (Vitest + Testing Library, jsdom)** live next to the code (`*.test.ts(x)`):
-229 tests, about 92% statement coverage. They cover:
+242 tests, about 92% statement coverage. They cover:
 
-- pure logic: validation rules, mapping API messages, status, interpolation, URL state, formatting;
-- every component's states, assertions written the way a user sees the UI (roles, labels, Polish copy);
+- pure logic: validation rules, mapping API messages, status, interpolation, URL state, formatting,
+  repainting the basemap in the app palette;
+- every component's states, assertions written the way a user sees the UI (roles, labels, Polish copy),
+  including the vehicle type icon in the accessible name of table rows and map list items;
 - keyboard and mouse use of custom widgets (the language dropdown);
-- motion that gates behaviour: the dialog and toasts close only after their exit animation, and
-  the map list keeps a card's details until it has collapsed (jsdom runs no animations, so tests
-  hold one open by hand);
+- motion that gates behaviour: the dialog and toasts close only after their exit animation, the
+  map list keeps a card's details until it has collapsed (jsdom runs no animations, so tests
+  hold one open by hand), and the vehicle list's loading screen stays for its full duration
+  (fake timers);
 - integration through the real route tree (`src/app/test/renderApp.tsx`), including the vehicle
   dialog switching between details and edit without closing.
 
@@ -78,6 +81,7 @@ API in the browser:
 The clock is fixed and reduced motion is on, so runs are deterministic and screenshots stable.
 
 - **Functional specs** (`*.e2e.ts`) cover:
+  - the loading screen with motion on, then the table;
   - sorting and searching in the URL;
   - the whole edit flow: PUT body, server 400 errors on fields, 500 then retry, Esc, deep link,
     focus trapped and restored;
@@ -140,13 +144,23 @@ src/
   ignored.
 - **Smooth markers**: each one moves between consecutive reports over the time between them,
   drawn straight into the MapLibre source; with reduced motion they jump instead.
-- **Dark map style** (OpenFreeMap *dark*, not *liberty*) to match the dark-only UI. The map page is
-  a lazy-loaded chunk, because MapLibre is ~1.1 MB.
+- **Dark map style** (OpenFreeMap *dark*, not *liberty*), repainted on load in the app palette, so
+  the map looks like part of the app. The map page is a lazy-loaded chunk, because MapLibre is ~1.1 MB.
 - **i18n with i18next**: Polish by default, type-checked keys, and tests that keep every locale's
   keys and plural forms in sync. A new language is a locale file, a flag SVG and one entry in
   `shared/i18n/languages.ts`. The switcher is a custom, keyboard-accessible dropdown with flags, so
   it scales past two languages.
-- **CSS Modules + design tokens** (`src/app/styles/tokens.css`), kept basic for a later restyle.
+- **CSS Modules + design tokens** (`src/app/styles/tokens.css`).
+- **Design direction**: a flat deep-teal background with a four-colour palette (sand, ember, teal,
+  abyss). The grainy gradient (SVG noise) is kept for a few accents: the logo, the primary button, the
+  active tab and the dialog's top edge. All corners are sharp. Registration numbers look like small
+  number plates. Each vehicle name, in the table and the map list, starts with a line icon of its
+  type (car, van, small truck, tractor-trailer; a dashed outline for unknown).
+- **Loading screen** for the vehicle list: a vehicle drives a short route while the trail is drawn,
+  and the heading and search appear only with the data. On the first load it stays until the vehicle arrives (2.2 s) even when
+  the data is faster, so the animation is not cut off mid-route; with reduced motion it waits only for the data.
+- **Self-hosted fonts** (Schibsted Grotesk for the UI, JetBrains Mono for plates), so the app
+  and the screenshots do not depend on system fonts or a font CDN.
 - **Mobile below 768 px is a reduced mode**: compact, tappable vehicle cards (name, plate,
   driver) with "Show on map" next to the name, a full-screen dialog, and the map with a compact list. No sorting or detail panels.
 - **Accessibility basics**: landmarks, labelled fields with linked error messages, `aria-sort`,

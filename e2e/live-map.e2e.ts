@@ -3,7 +3,7 @@ import { expect, MAP_CENTER_VEHICLE, positionUpdate, test } from './support/test
 const vehicleList = (page: import('@playwright/test').Page) =>
   page.getByRole('list', { name: 'Pojazdy' })
 const listItem = (page: import('@playwright/test').Page, name: string) =>
-  vehicleList(page).getByRole('button', { name: new RegExp(`^${name}`) })
+  vehicleList(page).getByRole('button', { name: new RegExp(`^\\p{L}[\\p{L} ]*?${name}`, 'u') })
 
 test.describe('live map', () => {
   test('shows live positions and updates them as reports come in', async ({ page, api }) => {

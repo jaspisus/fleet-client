@@ -7,6 +7,7 @@ export {
 } from './api/queries'
 export { updateVehicle } from './api/vehicleApi'
 export { useVehicleLabels } from './lib/labels'
+export { VehicleTypeIcon } from './ui/VehicleTypeIcon'
 export { isRegistrationNumberTaken, normalizeRegistrationNumber } from './model/registration'
 export {
   FUEL_TYPES,

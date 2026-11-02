@@ -20,10 +20,10 @@ export const getVehicleStatus = (
 
 /** Map marker colours; the same values as the status tokens in app/styles/tokens.css. */
 export const STATUS_COLORS: Record<VehicleStatus, string> = {
-  moving: '#3fb950',
-  parked: '#58a6ff',
-  offline: '#8b949e',
-  noSignal: '#d29922',
+  moving: '#6fd3bf',
+  parked: '#f4c381',
+  offline: '#7a9398',
+  noSignal: '#e2704f',
 }
 
 export const STATUS_BADGE_TONES: Record<VehicleStatus, BadgeTone> = {

@@ -4,7 +4,7 @@
   z-index: var(--z-header);
   height: var(--header-height);
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--color-bg);
 }
 
 .inner {
@@ -22,9 +22,11 @@
   grid-area: brand;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   color: var(--color-text);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-heavy);
+  letter-spacing: var(--letter-spacing-title);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -34,10 +36,20 @@
 }
 
 .logo {
-  width: 20px;
-  height: 20px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--color-accent), var(--color-success));
+  position: relative;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  background: var(--gradient-signature);
+}
+
+.logo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--noise-texture);
+  opacity: var(--noise-opacity);
+  mix-blend-mode: overlay;
 }
 
 .language {
@@ -57,7 +69,6 @@
   align-items: center;
   justify-content: center;
   padding: 0 var(--space-3);
-  border-bottom: 2px solid transparent;
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -83,6 +94,18 @@
     anchor-name: --active-nav-link;
   }
 
+  .nav:has(.active)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4px;
+    background: var(--noise-texture), var(--gradient-accent);
+    background-blend-mode: overlay;
+  }
+
+  /* Masks the gradient outside the active link; clip-path keeps the spread shadow to the line height. */
   .nav:has(.active)::after {
     content: '';
     position: absolute;
@@ -90,8 +113,9 @@
     left: anchor(left);
     right: anchor(right);
     bottom: anchor(bottom);
-    height: 2px;
-    background: var(--color-accent);
+    height: 4px;
+    box-shadow: 0 0 0 100vw var(--color-bg);
+    clip-path: inset(0 -100vw);
     transition:
       left var(--transition-enter),
       right var(--transition-enter);
@@ -100,7 +124,7 @@
 
 @supports not (anchor-name: --active-nav-link) {
   .active {
-    border-bottom-color: var(--color-accent);
+    border-image: var(--gradient-signature) 1;
   }
 }
 
@@ -111,6 +135,7 @@
   }
 
   .nav {
+    justify-self: start;
     justify-content: flex-start;
     margin-left: var(--space-5);
   }

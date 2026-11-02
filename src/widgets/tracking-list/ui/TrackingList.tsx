@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { Vehicle } from '@/entities/vehicle'
+import { VehicleTypeIcon, type Vehicle } from '@/entities/vehicle'
 import {
   getVehicleStatus,
   VehicleStatusBadge,
@@ -118,6 +118,7 @@ const TrackingListItem = ({
         onClick={() => onSelect(isSelected ? null : vehicle.id)}
       >
         <span className={styles.summary}>
+          <VehicleTypeIcon type={vehicle.type} className={styles.typeIcon} />
           <TruncatedText className={styles.name} text={vehicle.name} />
           <VehicleStatusBadge status={status} />
           <span className={styles.chevron} aria-hidden="true" />

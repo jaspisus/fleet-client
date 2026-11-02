@@ -1,0 +1,10 @@
+.icon {
+  display: inline-block;
+  flex: none;
+  width: 2em;
+  height: 1.25em;
+  background-color: currentcolor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+}

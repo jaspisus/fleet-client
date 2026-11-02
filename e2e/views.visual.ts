@@ -55,8 +55,10 @@ test.describe('visual regression', () => {
   test('live map with a selected vehicle', async ({ page }) => {
     await page.goto('/map')
     const list = page.getByRole('list', { name: 'Pojazdy' })
-    await expect(list.getByRole('button', { name: /^Sprinter 01/ })).toContainText('W ruchu')
-    await list.getByRole('button', { name: /^Sprinter 01/ }).click()
+    await expect(list.getByRole('button', { name: /^\p{L}[\p{L} ]*?Sprinter 01/u })).toContainText(
+      'W ruchu',
+    )
+    await list.getByRole('button', { name: /^\p{L}[\p{L} ]*?Sprinter 01/u }).click()
     await expect(page.getByRole('status').filter({ hasText: 'Połączenie' })).toContainText(
       'Na żywo',
     )

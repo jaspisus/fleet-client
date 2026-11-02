@@ -1,16 +1,21 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useVehicleLabels, vehiclesQueryOptions, type Vehicle } from '@/entities/vehicle'
+import {
+  useVehicleLabels,
+  VehicleTypeIcon,
+  vehiclesQueryOptions,
+  type Vehicle,
+} from '@/entities/vehicle'
 import { selectVehicle } from '@/features/select-vehicle'
 import { describeRequestError } from '@/shared/i18n'
+import { cx } from '@/shared/lib'
 import {
   Button,
   buttonClassName,
   EmptyState,
   ErrorState,
-  LoadingState,
   TextInput,
   TruncatedText,
   VisuallyHidden,
@@ -18,6 +23,7 @@ import {
 import { isVehicleColumnId, type VehicleColumnId, type VehicleSort } from '../model/columns'
 import { useVehiclesTable } from '../model/useVehiclesTable'
 import styles from './VehiclesTable.module.css'
+import { VehiclesLoader } from './VehiclesLoader'
 
 const NO_VEHICLES: Vehicle[] = []
 
@@ -83,7 +89,12 @@ const VehicleCell = ({ columnId, vehicle }: { columnId: VehicleColumnId; vehicle
 
   switch (columnId) {
     case 'name':
-      return <TruncatedText className={styles.name} text={vehicle.name} />
+      return (
+        <span className={styles.nameWithIcon}>
+          <VehicleTypeIcon type={vehicle.type} className={styles.typeIcon} />
+          <TruncatedText className={styles.name} text={vehicle.name} />
+        </span>
+      )
     case 'registrationNumber':
       return <TruncatedText className={styles.plate} text={vehicle.registrationNumber} />
     case 'makeModel':
@@ -123,6 +134,11 @@ export const VehiclesTable = ({ query, sort, onQueryChange, onSortChange }: Vehi
   const { t } = useTranslation()
   const searchId = useId()
   const vehiclesQuery = useQuery(vehiclesQueryOptions())
+  const [revealAfterLoading] = useState(() => vehiclesQuery.isPending)
+  const [loaderFinished, setLoaderFinished] = useState(() => !vehiclesQuery.isPending)
+  const isLoading = vehiclesQuery.isPending || !loaderFinished
+  const isError = !isLoading && vehiclesQuery.isError
+  const isSuccess = !isLoading && vehiclesQuery.isSuccess
   const table = useVehiclesTable({
     vehicles: vehiclesQuery.data?.items ?? NO_VEHICLES,
     query,
@@ -134,35 +150,45 @@ export const VehiclesTable = ({ query, sort, onQueryChange, onSortChange }: Vehi
   const columnLabel = (id: VehicleColumnId) => t(`vehicles.columns.${id}`)
 
   return (
-    <section className={styles.section} aria-labelledby={`${searchId}-title`}>
+    <section
+      className={cx(styles.section, revealAfterLoading && styles.reveal)}
+      aria-labelledby={`${searchId}-title`}
+    >
       <div className={styles.toolbar}>
-        <div className={styles.heading}>
+        <div className={cx(styles.heading, isLoading && styles.hiddenHeading)}>
           <h1 id={`${searchId}-title`} className={styles.title}>
             {t('vehicles.title')}
           </h1>
           {/* Always rendered: a live region must exist before its text changes, and the reserved
               line keeps the header from jumping when the list loads. */}
           <p className={styles.count} aria-live="polite">
-            {vehiclesQuery.isSuccess && t('vehicles.count', { count: rows.length })}
+            {isSuccess && t('vehicles.count', { count: rows.length })}
           </p>
         </div>
-        <div className={styles.search}>
-          <label htmlFor={searchId}>
-            <VisuallyHidden>{t('vehicles.searchLabel')}</VisuallyHidden>
-          </label>
-          <TextInput
-            id={searchId}
-            type="search"
-            value={query}
-            placeholder={t('vehicles.searchPlaceholder')}
-            onChange={(event) => onQueryChange(event.target.value)}
-          />
-        </div>
+        {!isLoading && (
+          <div className={styles.search}>
+            <label htmlFor={searchId}>
+              <VisuallyHidden>{t('vehicles.searchLabel')}</VisuallyHidden>
+            </label>
+            <TextInput
+              id={searchId}
+              type="search"
+              value={query}
+              placeholder={t('vehicles.searchPlaceholder')}
+              onChange={(event) => onQueryChange(event.target.value)}
+            />
+          </div>
+        )}
       </div>
 
-      {vehiclesQuery.isPending && <LoadingState />}
+      {isLoading && (
+        <VehiclesLoader
+          loaded={!vehiclesQuery.isPending}
+          onFinish={() => setLoaderFinished(true)}
+        />
+      )}
 
-      {vehiclesQuery.isError && (
+      {isError && (
         <ErrorState
           title={t('vehicles.loadError')}
           description={describeRequestError(t, vehiclesQuery.error)}
@@ -170,11 +196,11 @@ export const VehiclesTable = ({ query, sort, onQueryChange, onSortChange }: Vehi
         />
       )}
 
-      {vehiclesQuery.isSuccess && rows.length === 0 && (
+      {isSuccess && rows.length === 0 && (
         <EmptyState>{query ? t('vehicles.noResults', { query }) : t('vehicles.empty')}</EmptyState>
       )}
 
-      {vehiclesQuery.isSuccess && rows.length > 0 && (
+      {isSuccess && rows.length > 0 && (
         <div className={styles.scroller}>
           <table role="table" className={styles.table}>
             <caption className={styles.caption}>{t('vehicles.title')}</caption>
