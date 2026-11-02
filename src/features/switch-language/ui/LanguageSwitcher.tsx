@@ -21,10 +21,6 @@ const LanguageLabel = ({ language }: { language: Language }) => (
   </>
 )
 
-/**
- * A select-only combobox (WAI-ARIA APG pattern). Focus stays on the trigger and the highlighted
- * option is exposed through `aria-activedescendant`, so the list closes on blur.
- */
 export const LanguageSwitcher = () => {
   const { t, i18n } = useTranslation()
   const current = isLanguage(i18n.resolvedLanguage) ? i18n.resolvedLanguage : DEFAULT_LANGUAGE

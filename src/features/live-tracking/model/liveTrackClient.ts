@@ -16,10 +16,8 @@ export interface LiveTrackClient {
 }
 
 /**
- * One SignalR connection to the tracking hub, following a fixed set of vehicles.
- * A subscription belongs to the connection that made it, so it is renewed after every reconnect.
- * After `stop()` the client reports nothing more, which makes it safe to replace (StrictMode,
- * retries) without stale callbacks overwriting the state of its successor.
+ * One SignalR connection to the tracking hub, following a fixed set of vehicles. After `stop()`
+ * it reports nothing more.
  */
 export const createLiveTrackClient = ({
   url,
@@ -51,6 +49,7 @@ export const createLiveTrackClient = ({
   connection.onreconnecting(() => report('reconnecting'))
   connection.onreconnected(() => {
     report('live')
+    // A subscription belongs to the connection that made it.
     // If renewing fails the connection is broken anyway; onclose reports it.
     subscribe().catch(() => undefined)
   })

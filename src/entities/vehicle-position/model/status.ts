@@ -3,10 +3,7 @@ import type { LiveTrackPosition } from './types'
 
 export type VehicleStatus = 'moving' | 'parked' | 'offline' | 'noSignal'
 
-/**
- * Parked vehicles still report every 60 s, so five minutes of silence means the tracker is off.
- * The API does not define this threshold; it is an assumption documented in the README.
- */
+/** Parked vehicles still report every 60 s, so five minutes of silence means the tracker is off. */
 export const OFFLINE_AFTER_MS = 5 * 60_000
 
 export const getVehicleStatus = (

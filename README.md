@@ -5,7 +5,8 @@ A small app for a vehicle fleet dispatcher, working against the Fleet API (REST 
 - **Vehicles** – a sortable, searchable table of every vehicle. Editing happens in a modal dialog.
   On phones, tapping a compact card opens the same dialog read-only, with Edit in its header.
 - **Live map** – a list of vehicles next to a MapLibre map where they move live (SignalR). The list
-  and the map share one selected vehicle.
+  and the map share one selected vehicle, and the map zooms in on it and follows it. Dragging the map stops following
+  until a vehicle is selected again.
 
 The UI is Polish by default, with English in a language dropdown. Everything else (code, comments, this file) is in English.
 
@@ -50,10 +51,10 @@ Skip it once with `git commit --no-verify`.
 ## Tests
 
 **Unit and component tests (Vitest + Testing Library, jsdom)** live next to the code (`*.test.ts(x)`):
-242 tests, about 92% statement coverage. They cover:
+249 tests, about 92% statement coverage. They cover:
 
 - pure logic: validation rules, mapping API messages, status, interpolation, URL state, formatting,
-  repainting the basemap in the app palette;
+  repainting the basemap in the app palette, moving the camera with a followed vehicle;
 - every component's states, assertions written the way a user sees the UI (roles, labels, Polish copy),
   including the vehicle type icon in the accessible name of table rows and map list items;
 - keyboard and mouse use of custom widgets (the language dropdown);
@@ -88,6 +89,8 @@ The clock is fixed and reduced motion is on, so runs are deterministic and scree
   - live updates;
   - selection in both directions (a fixture vehicle stands in the middle of the map, so a click on
     the canvas centre selects it);
+  - the map following the selected vehicle as it moves, pausing after a drag and resuming on a
+    click on its marker (a vehicle under the canvas centre shows the pointer cursor);
   - the list's details expanding into view and collapsing on a click;
   - "Show on map";
   - the language persisting across reloads;
@@ -188,8 +191,7 @@ src/
 
 - Live status (and last report) as a column in the vehicle table.
 - An unsaved-changes guard when closing the dialog with edits (TanStack Router `useBlocker`).
-- Filters by status and fleet on the map list; a "follow this vehicle" camera mode; clustering if the
-  fleet grows.
+- Filters by status and fleet on the map list; clustering if the fleet grows.
 - Automated accessibility checks (axe) in the Playwright suite.
 - CI: lint, type-check, Vitest and Playwright in the Playwright Docker image (the visual tests already run there).
 - An optimistic save (with rollback) if the real API turns out to be slow.

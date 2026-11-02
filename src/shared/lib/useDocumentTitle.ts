@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 /**
  * Sets `document.title` to "Page · App" (or just the app name) while the component is mounted,
- * and restores the previous title afterwards, so a closed dialog hands the title back to its page.
+ * and restores the previous title afterwards.
  */
 export const useDocumentTitle = (appName: string, pageTitle?: string) => {
   useEffect(() => {

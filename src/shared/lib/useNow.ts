@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-/** Current time that refreshes on an interval, for labels such as "2 minutes ago". */
+/** Current time, refreshed on an interval. */
 export const useNow = (intervalMs = 10_000) => {
   const [now, setNow] = useState(() => Date.now())
 

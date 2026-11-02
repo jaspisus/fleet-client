@@ -10,7 +10,6 @@ import type { VehicleFormField, VehicleFormValues } from './formValues'
 
 type ValidationMessages = (typeof pl)['validation']
 
-/** Every `validation.<field>.<rule>` translation key. */
 export type ValidationKey = {
   [
     Field in keyof ValidationMessages
@@ -22,7 +21,7 @@ export type FieldError = { key: ValidationKey; params?: Record<string, number> }
 
 export type VehicleFormErrors = Partial<Record<VehicleFormField, FieldError>>
 
-// The same rules as the API (see docs/API.md), so most mistakes are caught before saving.
+// Keep in sync with the API's rules in docs/API.md.
 export const NAME_MIN_LENGTH = 2
 export const NAME_MAX_LENGTH = 60
 export const REGISTRATION_NUMBER_MAX_LENGTH = 50

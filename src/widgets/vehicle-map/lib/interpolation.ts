@@ -51,10 +51,8 @@ interface PlanTweenOptions {
 }
 
 /**
- * Plans the movement to a newly reported position. Driving vehicles report every 3–5 s, so the
- * marker travels from where it is drawn to the new report over the time between the two reports:
- * it arrives about when the next report comes in, and keeps moving smoothly in between.
- * The first report, long gaps (e.g. parked heartbeats) and reduced motion jump instead.
+ * Plans the movement from where the marker is drawn to a newly reported position, lasting as long
+ * as the gap between the two reports. The first report, long gaps and reduced motion jump instead.
  */
 export const planTween = ({
   current,

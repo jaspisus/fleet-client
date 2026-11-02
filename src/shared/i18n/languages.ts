@@ -24,7 +24,7 @@ export const isLanguage = (value: unknown): value is Language =>
 /** The language's own name ("English", "Polski"), the same whatever the UI language is. */
 export const getLanguageName = (language: Language) => LANGUAGE_REGISTRY[language].name
 
-/** URL of the language's flag; small SVGs are inlined into the bundle as data URLs. */
+/** URL of the language's flag SVG. */
 export const getLanguageFlag = (language: Language) => LANGUAGE_REGISTRY[language].flag
 
 /** Full locale for Intl formatters. */

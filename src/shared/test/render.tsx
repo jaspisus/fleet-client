@@ -29,10 +29,7 @@ interface RenderOptions {
   queryClient?: QueryClient
 }
 
-/**
- * Renders UI with Query, i18n and a memory router whose every path shows the UI, so components
- * with links and navigation can be tested without the app's route tree.
- */
+/** Renders UI with Query, i18n and a memory router whose every path shows the UI. */
 export const renderWithProviders = (
   ui: ReactNode,
   { path = '/', queryClient = createTestQueryClient() }: RenderOptions = {},
