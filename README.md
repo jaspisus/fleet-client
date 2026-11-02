@@ -154,8 +154,9 @@ src/
 - The live connection is needed only on the map page; the table shows no live status.
 - No vehicle labels on the map: the list shows the names, and screenshots stay stable.
 - API data (fleet, driver and model names) is not translated; only the UI and enum values are.
-- Long API text is cut with an ellipsis and shown in full in a tooltip: the API allows longer values
-  (a 60-character name, a 50-character plate) than a readable table can show.
+- Long API text is cut with an ellipsis: the API allows longer values (a 60-character name, a
+  50-character plate) than a readable table can show. The full text is in the browser's native
+  `title` tooltip.
 - "Show on map" connects the two views; the task does not require it.
 - Vehicles cannot be created or deleted: the API has no `POST` or `DELETE` for them.
 
