@@ -26,6 +26,9 @@ npm run dev   # http://localhost:5173
 
 The API address can be changed with `VITE_API_BASE_URL` (see `.env.example`).
 
+The visual tests, `npm run check` and the pre-commit hook also need **Docker** running and a POSIX
+shell (macOS, Linux or WSL2). Without Docker they fail at the visual step.
+
 ## Scripts
 
 | Command | What it does |
@@ -38,10 +41,10 @@ The API address can be changed with `VITE_API_BASE_URL` (see `.env.example`).
 | `npm test` / `npm run test:run` | Vitest in watch mode / once |
 | `npm run test:coverage` | Vitest with a v8 coverage report and thresholds |
 | `npm run test:e2e` | Playwright functional tests (1440 px desktop + 390 px mobile) |
-| `npm run test:visual` | Playwright visual regression at 390, 768, 1024, 1280, 1440, 1920 and 2560 px, in Docker |
-| `npm run test:visual:update` | Re-record the visual baselines after an intended UI change |
+| `npm run test:visual` | Playwright visual regression at 390, 768, 1024, 1280, 1440, 1920 and 2560 px. **Needs Docker** |
+| `npm run test:visual:update` | Re-record the visual baselines after an intended UI change. **Needs Docker** |
 | `npm run screenshots` | Re-take the README screenshots in `docs/screenshots/` (mocked API, real OpenFreeMap tiles) |
-| `npm run check` | Everything above: lint, format check, type-check, Vitest with coverage, e2e and visual tests |
+| `npm run check` | Everything above: lint, format check, type-check, Vitest with coverage, e2e and visual tests. **Needs Docker** |
 
 The first Playwright run needs a browser: `npx playwright install chromium`.
 
