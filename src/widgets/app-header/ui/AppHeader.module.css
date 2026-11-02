@@ -1,0 +1,147 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  height: var(--header-height);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'brand language'
+    'nav nav';
+  align-items: center;
+  height: 100%;
+  column-gap: var(--space-4);
+}
+
+.brand {
+  grid-area: brand;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-heavy);
+  letter-spacing: var(--letter-spacing-title);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.brand:hover {
+  color: var(--color-text);
+}
+
+.logo {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  background: var(--gradient-signature);
+}
+
+.logo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--noise-texture);
+  opacity: var(--noise-opacity);
+  mix-blend-mode: overlay;
+}
+
+.language {
+  grid-area: language;
+}
+
+.nav {
+  grid-area: nav;
+  display: flex;
+  align-self: stretch;
+  gap: var(--space-1);
+}
+
+.navLink {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.navLink:hover {
+  color: var(--color-text);
+}
+
+.active,
+.active:hover {
+  color: var(--color-text);
+}
+
+@supports (anchor-name: --active-nav-link) {
+  .nav {
+    position: relative;
+  }
+
+  .active {
+    anchor-name: --active-nav-link;
+  }
+
+  .nav:has(.active)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4px;
+    background: var(--noise-texture), var(--gradient-accent);
+    background-blend-mode: overlay;
+  }
+
+  /* Masks the gradient outside the active link; clip-path keeps the spread shadow to the line height. */
+  .nav:has(.active)::after {
+    content: '';
+    position: absolute;
+    position-anchor: --active-nav-link;
+    left: anchor(left);
+    right: anchor(right);
+    bottom: anchor(bottom);
+    height: 4px;
+    box-shadow: 0 0 0 100vw var(--color-bg);
+    clip-path: inset(0 -100vw);
+    transition:
+      left var(--transition-enter),
+      right var(--transition-enter);
+  }
+}
+
+@supports not (anchor-name: --active-nav-link) {
+  .active {
+    border-image: var(--gradient-signature) 1;
+  }
+}
+
+@media (min-width: 768px) {
+  .inner {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: 'brand nav language';
+  }
+
+  .nav {
+    justify-self: start;
+    justify-content: flex-start;
+    margin-left: var(--space-5);
+  }
+
+  .navLink {
+    flex: none;
+  }
+}
