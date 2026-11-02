@@ -13,8 +13,8 @@ export const updateVehicleMutationKey = (vehicleId: string) =>
   ['update-vehicle', vehicleId] as const
 
 /**
- * Saves a vehicle (pessimistically: the UI waits for the server). The cache update and the toast
- * live here, not in `mutate()` callbacks, so they still happen if the dialog closes mid-save.
+ * Saves a vehicle, then writes it into both caches and shows a toast, even if the caller has
+ * unmounted by then.
  */
 export const useUpdateVehicle = (vehicleId: string) => {
   const queryClient = useQueryClient()

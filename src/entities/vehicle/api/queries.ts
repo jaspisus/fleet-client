@@ -16,10 +16,7 @@ export const vehiclesQueryOptions = () =>
     queryFn: ({ signal }) => fetchVehicles(signal),
   })
 
-/**
- * Seeds the detail from the list cache, so opening the edit dialog from the table shows the form
- * at once; it still refetches in the background once the list data is stale.
- */
+/** Query options for one vehicle, seeded from the list cache and refetched once that is stale. */
 export const vehicleQueryOptions = (id: string, queryClient: QueryClient) =>
   queryOptions({
     queryKey: vehicleKeys.detail(id),

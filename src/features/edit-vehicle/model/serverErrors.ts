@@ -5,10 +5,7 @@ type MessageRule = readonly [pattern: RegExp, toError: (match: RegExpMatchArray)
 
 const fixed = (key: ValidationKey) => (): FieldError => ({ key })
 
-/**
- * The API answers in English only. Its validation messages (all listed in docs/API.md) are mapped to
- * our translation keys, so the UI shows them in the selected language.
- */
+/** Maps the API's English-only validation messages (all listed in docs/API.md) to translation keys. */
 const SERVER_MESSAGE_RULES: readonly MessageRule[] = [
   [/^Name is required\.$/, fixed('validation.name.required')],
   [

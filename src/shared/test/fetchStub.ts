@@ -36,10 +36,7 @@ export const defaultApiRoutes = (): ApiRoutes => ({
   ),
 })
 
-/**
- * Replaces `fetch` with a router keyed by "METHOD /path". Unknown routes answer 404, so a
- * missing stub shows up as a failing request instead of a hanging test.
- */
+/** Replaces `fetch` with a router keyed by "METHOD /path"; unknown routes answer 404. */
 export const stubApi = (overrides: ApiRoutes = {}) => {
   const routes = { ...defaultApiRoutes(), ...overrides }
   const requests: StubbedRequest[] = []

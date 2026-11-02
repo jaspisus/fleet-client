@@ -40,7 +40,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: var(--gradient-accent) 0 0 / 200% 100%;
+  background: var(--gradient-accent) 0 0 / 200% 100% border-box;
   color: var(--color-accent-contrast);
   font-weight: var(--font-weight-bold);
 }

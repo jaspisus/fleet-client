@@ -98,7 +98,6 @@ const TrackingListItem = ({
         setShowDetails(false)
         return
       }
-      // Scrolling after the expansion brings the whole details panel into view.
       itemRef.current?.scrollIntoView({
         block: 'nearest',
         behavior: prefersReducedMotion() ? 'auto' : 'smooth',
@@ -138,8 +137,7 @@ const TrackingListItem = ({
           />
         </span>
       </button>
-      {/* A click anywhere on the open card collapses it, like its button. Pointer only: the button
-          stays the keyboard and screen reader control. Selecting text does not collapse. */}
+      {/* Pointer only: the button stays the keyboard and screen reader control. */}
       <div
         ref={panelRef}
         className={styles.detailsPanel}

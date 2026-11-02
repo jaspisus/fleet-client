@@ -18,7 +18,7 @@ const storeLanguage = (language: Language) => {
   try {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
   } catch {
-    // The choice then lasts only for this page load, which is acceptable.
+    // Blocked storage: the choice lasts only for this page load.
   }
 }
 

@@ -19,7 +19,6 @@ export const NotFoundPage = () => {
   )
 }
 
-/** Shown when rendering a route throws; reloading is the most reliable way out. */
 export const RouteErrorPage = () => {
   const { t } = useTranslation()
 

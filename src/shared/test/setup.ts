@@ -5,8 +5,7 @@ import { DEFAULT_LANGUAGE, i18n } from '@/shared/i18n'
 
 vi.mock('zustand')
 
-// jsdom has no modal dialogs. This shim covers what the app uses; real behaviour (focus trap,
-// inert page, Esc) is covered by the Playwright tests.
+// jsdom has no modal dialogs.
 if (typeof HTMLDialogElement.prototype.showModal !== 'function') {
   HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
     this.setAttribute('open', '')

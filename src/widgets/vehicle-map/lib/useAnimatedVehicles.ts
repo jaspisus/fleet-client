@@ -4,6 +4,7 @@ import type { MapInstance } from 'react-map-gl/maplibre'
 import type { Vehicle } from '@/entities/vehicle'
 import type { PositionsById } from '@/entities/vehicle-position'
 import { toVehicleFeatureCollection } from './features'
+import { followVehicle } from './follow'
 import {
   isTweenRunning,
   planTween,
@@ -18,26 +19,29 @@ interface UseAnimatedVehiclesOptions {
   vehicles: readonly Vehicle[]
   positions: PositionsById
   selectedVehicleId: string | null
+  followVehicleId: string | null
   now: number
   animate: boolean
 }
 
 /**
- * Draws the vehicles into the GeoJSON source and animates them between reports. Frames write to
- * the map source directly instead of going through React state, and the loop runs only while
- * some vehicle is still moving towards its latest report.
+ * Draws the vehicles into the GeoJSON source, animates them between reports and moves the camera
+ * with the followed vehicle.
  */
 export const useAnimatedVehicles = ({
   map,
   vehicles,
   positions,
   selectedVehicleId,
+  followVehicleId,
   now,
   animate,
 }: UseAnimatedVehiclesOptions) => {
   const tweensRef = useRef(new Map<string, Tween>())
   const lastReportsRef = useRef<PositionsById>({})
   const frameRef = useRef<number | null>(null)
+  const followedIdRef = useRef<string | null>(null)
+  const pointerDownRef = useRef(false)
 
   /** Draws one frame; returns whether another frame is needed. */
   const drawFrame = useEffectEvent((time: number): boolean => {
@@ -61,6 +65,16 @@ export const useAnimatedVehicles = ({
         now,
       }),
     )
+
+    const followed = followVehicleId === null ? undefined : displayed.get(followVehicleId)
+    if (followed) {
+      const start = followedIdRef.current !== followVehicleId
+      followedIdRef.current = followVehicleId
+      running =
+        followVehicle(map, followed, { start, animate, held: pointerDownRef.current }) || running
+    } else {
+      followedIdRef.current = null
+    }
     return running
   })
 
@@ -94,10 +108,30 @@ export const useAnimatedVehicles = ({
     requestDraw()
   }, [positions, animate])
 
-  // Statuses, selection and the vehicle list change the drawing without moving anything.
+  useEffect(() => {
+    if (!map) return
+    const container = map.getCanvasContainer()
+    const press = () => {
+      pointerDownRef.current = true
+    }
+    const release = () => {
+      pointerDownRef.current = false
+      requestDraw()
+    }
+    container.addEventListener('pointerdown', press)
+    window.addEventListener('pointerup', release)
+    window.addEventListener('pointercancel', release)
+    return () => {
+      container.removeEventListener('pointerdown', press)
+      window.removeEventListener('pointerup', release)
+      window.removeEventListener('pointercancel', release)
+    }
+  }, [map])
+
+  // Statuses, selection, following and the vehicle list need a frame even when no vehicle moves.
   useEffect(() => {
     requestDraw()
-  }, [map, vehicles, selectedVehicleId, now])
+  }, [map, vehicles, selectedVehicleId, followVehicleId, now])
 
   useEffect(
     () => () => {

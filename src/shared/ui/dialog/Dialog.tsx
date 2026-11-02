@@ -15,10 +15,8 @@ interface DialogProps {
 }
 
 /**
- * Modal built on the native `<dialog>`: `showModal()` provides the focus trap, Esc handling and
- * an inert page behind it. It is open for as long as it is mounted; closing is up to the parent,
- * which usually navigates away. Clicking the backdrop does not close it, so edits are not lost.
- * Esc, the close button and `useCloseDialog()` play the exit animation before calling `onClose`.
+ * Modal built on the native `<dialog>`, open for as long as it is mounted. Esc, the close button
+ * and `useCloseDialog()` play the exit animation, then call `onClose`.
  */
 export const Dialog = ({
   title,

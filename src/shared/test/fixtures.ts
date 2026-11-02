@@ -99,7 +99,6 @@ export const transit05: Vehicle = {
 
 export const vehicles: Vehicle[] = [sprinter01, sprinter02, eTransit, transit05]
 
-/** "Now" for tests that depend on report ages. */
 export const NOW = Date.parse('2026-10-30T09:16:00.000Z')
 
 export const position = (

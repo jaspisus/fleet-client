@@ -1,6 +1,6 @@
 import type { FuelType, UpdateVehicleCommand, Vehicle, VehicleType } from '@/entities/vehicle'
 
-/** What the form edits: text inputs and selects hold strings; `driverId: ''` means no driver. */
+/** `driverId: ''` means no driver. */
 export interface VehicleFormValues {
   name: string
   registrationNumber: string

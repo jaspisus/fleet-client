@@ -42,7 +42,6 @@ interface EditVehicleFormProps {
   onCancel: () => void
   /** Shows the values locked, without Save and Cancel. */
   readOnly?: boolean
-  /** Focuses the first field on mount. */
   autoFocus?: boolean
 }
 
@@ -75,8 +74,6 @@ export const EditVehicleForm = ({
 
   const form = useForm({
     defaultValues: toFormValues(vehicle),
-    // Validate on save, then on every change. Validating on blur would insert error messages
-    // while the pointer is on its way to Save, moving the button away mid-click.
     validationLogic: revalidateLogic({ mode: 'submit', modeAfterSubmission: 'change' }),
     validators: {
       onDynamic: ({ value }) => {

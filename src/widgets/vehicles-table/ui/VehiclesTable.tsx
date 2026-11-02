@@ -125,11 +125,7 @@ interface VehiclesTableProps {
   onSortChange: (sort: VehicleSort | undefined) => void
 }
 
-/**
- * The vehicle list with search and sorting. Below 768px rows turn into compact cards (name,
- * registration, driver) without sorting; tapping a card opens the vehicle read-only; explicit ARIA roles keep the table semantics when CSS changes the
- * `display` of table elements.
- */
+/** The vehicle list with search and sorting; below 768px rows render as compact cards. */
 export const VehiclesTable = ({ query, sort, onQueryChange, onSortChange }: VehiclesTableProps) => {
   const { t } = useTranslation()
   const searchId = useId()
@@ -159,8 +155,7 @@ export const VehiclesTable = ({ query, sort, onQueryChange, onSortChange }: Vehi
           <h1 id={`${searchId}-title`} className={styles.title}>
             {t('vehicles.title')}
           </h1>
-          {/* Always rendered: a live region must exist before its text changes, and the reserved
-              line keeps the header from jumping when the list loads. */}
+          {/* Always rendered: a live region must exist before its text changes. */}
           <p className={styles.count} aria-live="polite">
             {isSuccess && t('vehicles.count', { count: rows.length })}
           </p>
@@ -202,6 +197,7 @@ export const VehiclesTable = ({ query, sort, onQueryChange, onSortChange }: Vehi
 
       {isSuccess && rows.length > 0 && (
         <div className={styles.scroller}>
+          {/* Explicit roles keep the table semantics when CSS changes `display`. */}
           <table role="table" className={styles.table}>
             <caption className={styles.caption}>{t('vehicles.title')}</caption>
             <thead role="rowgroup" className={styles.head}>

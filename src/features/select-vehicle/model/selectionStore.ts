@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 
 interface SelectionState {
-  /** Vehicle selected on the live map, shared by the list, the map and "Show on map". */
   selectedVehicleId: string | null
   selectVehicle: (vehicleId: string | null) => void
 }
