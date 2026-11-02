@@ -1,8 +1,0 @@
-dist
-dist-e2e
-coverage
-playwright-report
-test-results
-e2e/__screenshots__
-package-lock.json
-*.md
