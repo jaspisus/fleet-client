@@ -1,3 +1,5 @@
+import { isOneOf } from '@/shared/lib'
+
 export const VEHICLE_COLUMN_IDS = [
   'name',
   'registrationNumber',
@@ -14,9 +16,9 @@ export type VehicleColumnId = (typeof VEHICLE_COLUMN_IDS)[number]
 export type SortableColumnId = Exclude<VehicleColumnId, 'actions'>
 
 export const isVehicleColumnId = (value: string): value is VehicleColumnId =>
-  VEHICLE_COLUMN_IDS.some((id) => id === value)
+  isOneOf(VEHICLE_COLUMN_IDS, value)
 
-const isSortableColumnId = (value: string): value is SortableColumnId =>
+export const isSortableColumnId = (value: string): value is SortableColumnId =>
   value !== 'actions' && isVehicleColumnId(value)
 
 export interface VehicleSort {

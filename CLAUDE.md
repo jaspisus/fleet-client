@@ -38,6 +38,7 @@ npm run check                                            # lint, format:check, t
   - a layer imports only from lower layers;
   - other slices are imported only through their public API (`@/entities/vehicle`, not deeper paths).
 - Inside a slice, imports are relative.
+- A slice's `index.ts` exports only what other slices (or tests outside the slice) use; tests inside a slice import its files relatively.
 - `src/shared/test/**` is exempt from the layer rule (it builds fixtures from entity types).
 
 **Routing** (TanStack Router, code-based, `src/app/router/routes.tsx`):
@@ -45,25 +46,29 @@ npm run check                                            # lint, format:check, t
 - Loaders only *start* fetching (`void queryClient.prefetchQuery(...)`). Pages use `useQuery` and render their own loading, error and empty states.
 - The vehicle dialog is the `/vehicles/$vehicleId` route, rendered through `<Outlet/>` over the table. Its children only pick the mode: index = details (read-only), `edit` = edit. The parent route renders the dialog, so switching modes does not remount or re-animate it.
 - Edit from details pushes `/edit`; Save and Cancel then call `history.back()`. Edit opened directly (table, deep link) closes the dialog. The route component decides this from the mode at mount.
-- Table search and sort live in validated search params.
+- Closing the dialog navigates to `/vehicles` with `replace: true`, so Back does not reopen it.
+- Table search and sort live in validated search params. The search input keeps local state in `useSearchInput` (`pages/vehicles/model`; URL updates are async). It skips URL values it sent itself and adopts any other `q`, e.g. from the header's `/vehicles` link.
+- `useDocumentTitle` restores the previous title on cleanup, and a child's effect runs before its parent's. So `VehiclesPage` disables its title while a child route (the dialog) is open.
 - `/map` is a lazy chunk because MapLibre is large.
 
 **Data**:
 - Entities own API calls and `queryOptions`.
 - `vehicleQueryOptions(id, queryClient)` seeds the detail from the list cache.
 - After a successful PUT, `storeSavedVehicle` writes the saved vehicle into both caches; there is no refetch.
+- Error states gate on `isLoadingError` (no data), not `isError`: a failed background refetch keeps status `error` with the old data, and must not unmount the edit form or hide the table.
 - Errors are `ApiError` (status 0 = network error). `shouldRetryRequest` retries only network errors and 5xx; mutations never retry.
 - Client state is in Zustand: selected vehicle (`features/select-vehicle`), live positions (`entities/vehicle-position`), toasts.
 
 **Live tracking** (`features/live-tracking`):
-- `createLiveTrackClient` wraps one HubConnection. It re-invokes `SubscribeLiveTrack` after every reconnect, because a subscription belongs to its connection, and goes silent after `stop()`.
+- `createLiveTrackClient` wraps one HubConnection. It re-invokes `SubscribeLiveTrack` after every reconnect, because a subscription belongs to its connection; it reports `live` only after that succeeds, and on failure reports `disconnected` and stops. It goes silent after `stop()`.
+- With no vehicle IDs the hook starts no client, so `LiveMapPage` hides the `ConnectionIndicator` when there is nothing to track (load error or empty fleet).
 - `useLiveTracking` starts the client on a `setTimeout(0)`, so StrictMode's mount/unmount/mount does not abort a negotiation.
 - `mergePositions` drops reports older than the stored one, since the snapshot can arrive after a live event.
 - The status thresholds (offline after 5 minutes) are in `entities/vehicle-position/model/status.ts`. `STATUS_COLORS` there duplicates the status tokens in `tokens.css`; keep them in sync.
 
 **Map** (`widgets/vehicle-map`):
 - Markers are not React-driven. `useAnimatedVehicles` runs a rAF loop that calls `source.setData()` on the GeoJSON source, interpolating between reports (`lib/interpolation.ts`). The `<Source data={EMPTY_FEATURE_COLLECTION}>` prop is constant on purpose.
-- The camera follows the selected vehicle in the same rAF frames (`lib/follow.ts`): the first frame flies there and zooms in to at least `FOLLOW_ZOOM` (never out), later ones `jumpTo` the animated position, but skip while `map.isMoving()` or a pointer is down on the map: `jumpTo` resets every interaction handler, so jumping each frame stopped any ease or zoom gesture and kept a drag from ever passing its start threshold. While following, scroll and pinch zoom use `around: 'center'` (re-enabled imperatively: `enable()` ignores new options while enabled). `onDragStart` pauses following until the selection changes or the selected marker is clicked again.
+- The camera follows the selected vehicle in the same rAF frames (`lib/follow.ts`): the first frame flies there and zooms in to at least `FOLLOW_ZOOM` (never out), later ones `jumpTo` the animated position, but skip while `map.isMoving()` or a pointer is down on the map (released on `pointerup`, `pointercancel` or window `blur`; a held map requests no frames, the release does): `jumpTo` resets every interaction handler, so jumping each frame stopped any ease or zoom gesture and kept a drag from ever passing its start threshold. While following, scroll and pinch zoom use `around: 'center'` (re-enabled imperatively: `enable()` ignores new options while enabled). `onDragStart` pauses following until the selection changes or the selected marker is clicked again.
 - `lib/maplibre.ts` sets the MapLibre worker URL. This is required: with Vite bundling, MapLibre 6 cannot find its worker otherwise.
 - Layer specs and the SDF arrow icon are in `lib/layers.ts`.
 - `lib/basemap.ts` (`recolorBasemap`, called in `onLoad`) repaints the OpenFreeMap style in the app palette. It matches layers by `source-layer` (OpenMapTiles schema) and id fragments (`casing`, `motorway`, `major`, `dashline`, `park`); unknown layers keep their style. MapLibre controls are restyled with `:global(.maplibregl-…)` in `VehicleMap.module.css`.
@@ -76,9 +81,9 @@ npm run check                                            # lint, format:check, t
 - `readOnly` disables the fieldset and hides Save/Cancel; the details dialog uses it. The form is keyed by mode, so leaving edit discards changes. After a mode switch, focus moves to the new content (name field or the header Edit button), because the focused button was removed.
 - Saving uses `mutate(..., { onSuccess, onError })`, so a dialog closed mid-save never navigates. Cache updates and the toast live in the `useMutation` options.
 
-**Dialog** (`shared/ui/dialog`): built on the native `<dialog>` + `showModal()`. Its `close` handler ignores events that arrive while the dialog is open again (StrictMode remount). `actions` adds header controls before ×. Esc, the close button and `useCloseDialog()` (for content such as Save/Cancel) set `data-closing`, wait for the dialog's own animations (`afterOwnAnimations` in `shared/lib`; not its subtree: a spinner never finishes), then call `onClose`; calling the parent's `onClose` directly skips the exit animation. Durations are the `--transition-enter/exit` tokens, 0 ms with reduced motion. While open, it sets `scrollbar-gutter: stable` on `<html>` if the page had a scrollbar, because the scroll lock in `global.css` would otherwise shift the page.
+**Dialog** (`shared/ui/dialog`): built on the native `<dialog>` + `showModal()`. Its `close` handler ignores events that arrive while the dialog is open again (StrictMode remount). `actions` adds header controls before ×. Esc, the close button and `useCloseDialog()` (for content such as Save/Cancel) set `data-closing`, wait for the dialog's own animations (`useExitAnimation` → `afterOwnAnimations` in `shared/lib`; not its subtree: a spinner never finishes), then call `onClose`; calling the parent's `onClose` directly skips the exit animation. Durations are the `--transition-enter/exit` tokens, 0 ms with reduced motion. While open, it sets `scrollbar-gutter: stable` on `<html>` if the page had a scrollbar, because the scroll lock in `global.css` would otherwise shift the page.
 
-**Toasts** (`shared/ui/toast`) use the same motion: the timeout and the × button set `data-closing` on the toast and call the store's `dismiss` only after `afterOwnAnimations`; calling `dismiss` directly skips the exit animation.
+**Toasts** (`shared/ui/toast`) use the same motion: the timeout and the × button go through the same `useExitAnimation` and call the store's `dismiss` only after it; calling `dismiss` directly skips the exit animation.
 
 **i18n** (`shared/i18n`):
 - `locales/pl.ts` is the typed source of keys (`i18next.d.ts`). Other locales must `satisfies LocaleMessages`.
@@ -86,7 +91,7 @@ npm run check                                            # lint, format:check, t
 - The language dropdown (`features/switch-language`) is a custom select-only combobox (WAI-ARIA APG), not a native `<select>`. Focus stays on the trigger and the highlighted option is set with `aria-activedescendant`, so blur closes the list; the listbox prevents `mousedown` so clicking an option does not blur. Flags are SVG files, not emoji, because Windows shows emoji flags as letters.
 - Tests check that every registered locale has the same keys as pl, and exactly the plural suffixes `Intl.PluralRules` reports for it (pl: `_one/_few/_many/_other`, en: `_one/_other`).
 - Language names are not translation keys: the dropdown shows each language in its own name.
-- Use `useFormatters()` for dates, relative time, km/h and locale-aware sorting.
+- Use `useFormatters()` for dates, relative time, km/h and locale-aware sorting, and `useLanguage()` for the current language (it re-renders on change).
 
 **React Compiler is on.** Don't add manual memoization. Don't pass mutable library objects (TanStack Table header, row or column objects; the TanStack Form field API) into child components; pass the primitive values the child needs instead. Table cells render through `VehicleCell` by column id; column defs contain no JSX.
 

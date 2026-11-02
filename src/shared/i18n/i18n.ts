@@ -39,9 +39,6 @@ void i18n.use(initReactI18next).init({
   initAsync: false,
 })
 
-export const getLanguage = (): Language =>
-  isLanguage(i18n.resolvedLanguage) ? i18n.resolvedLanguage : DEFAULT_LANGUAGE
-
 /** Switches the UI language and remembers the choice for the next visit. */
 export const changeLanguage = async (language: Language) => {
   await i18n.changeLanguage(language)

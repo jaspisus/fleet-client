@@ -28,7 +28,9 @@ export const followVehicle = (
     return true
   }
   // `jumpTo` stops an ease, a zoom gesture or a drag that has not passed its start threshold yet.
-  if (held || map.isMoving()) return true
+  // Releasing the pointer requests a new frame, so a held map needs none.
+  if (held) return false
+  if (map.isMoving()) return true
   const current = map.getCenter()
   if (current.lng !== center[0] || current.lat !== center[1]) map.jumpTo({ center })
   return false

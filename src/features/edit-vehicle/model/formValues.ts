@@ -1,4 +1,5 @@
 import type { FuelType, UpdateVehicleCommand, Vehicle, VehicleType } from '@/entities/vehicle'
+import { isOneOf } from '@/shared/lib'
 
 /** `driverId: ''` means no driver. */
 export interface VehicleFormValues {
@@ -28,7 +29,7 @@ export const VEHICLE_FORM_FIELDS: readonly VehicleFormField[] = [
 ]
 
 export const isVehicleFormField = (value: string): value is VehicleFormField =>
-  VEHICLE_FORM_FIELDS.some((field) => field === value)
+  isOneOf(VEHICLE_FORM_FIELDS, value)
 
 export const toFormValues = (vehicle: Vehicle): VehicleFormValues => ({
   name: vehicle.name,

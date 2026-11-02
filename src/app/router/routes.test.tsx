@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import {
   dictionaries,
@@ -65,6 +65,19 @@ describe('app routes', () => {
       expect(router.state.location.search).toEqual({ q: 'transit', sort: '-name' }),
     )
   })
+
+  it('clears the search when the header link drops it from the URL', async () => {
+    stubApi()
+    const { user, router } = renderApp('/vehicles?q=sprinter')
+    expect(await screen.findByText('2 pojazdy')).toBeInTheDocument()
+
+    const nav = screen.getByRole('navigation', { name: 'Nawigacja główna' })
+    await user.click(within(nav).getByRole('link', { name: 'Pojazdy' }))
+
+    await waitFor(() => expect(router.state.location.href).toBe('/vehicles'))
+    expect(screen.getByRole('searchbox')).toHaveValue('')
+    expect(screen.getByText('4 pojazdy')).toBeInTheDocument()
+  })
 })
 
 describe('edit vehicle dialog', () => {
@@ -84,6 +97,24 @@ describe('edit vehicle dialog', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(router.state.location.href).toBe('/vehicles?q=sprinter')
     expect(document.title).toBe('Pojazdy · Panel floty')
+  })
+
+  it('keeps the edits when a background refresh fails', async () => {
+    const api = stubApi()
+    const { user, queryClient } = renderApp(`/vehicles/${sprinter01.id}/edit`)
+    const name = await within(await screen.findByRole('dialog')).findByLabelText('Nazwa')
+    await user.type(name, ' X')
+
+    api.routes[`GET /api/vehicles/${sprinter01.id}`] = () => problemResponse(503)
+    api.routes['GET /api/vehicles'] = () => problemResponse(503)
+    await act(async () => {
+      await queryClient.refetchQueries()
+      // TanStack Query notifies observers on a timeout, so the failed state renders a tick later.
+      await new Promise((resolve) => setTimeout(resolve))
+    })
+
+    expect(screen.getByLabelText('Nazwa')).toHaveValue('Sprinter 01 X')
+    expect(screen.queryByText('Nie udało się wczytać danych pojazdu.')).not.toBeInTheDocument()
   })
 
   it('closes on Esc', async () => {
@@ -179,6 +210,33 @@ describe('vehicle details dialog', () => {
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(router.state.location.href).toBe('/vehicles?q=sprinter')
+  })
+
+  it('does not reopen on Back after closing', async () => {
+    stubApi()
+    const { user, router } = renderApp('/vehicles')
+
+    await user.click(await screen.findByRole('link', { name: 'Szczegóły pojazdu Sprinter 01' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Sprinter 01' })
+    await user.click(within(dialog).getByRole('button', { name: 'Zamknij' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+
+    router.history.back()
+
+    await waitFor(() => expect(router.state.location.href).toBe('/vehicles'))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('keeps its own title over the page title on a deep link, and gives it back on close', async () => {
+    stubApi()
+    const { user } = renderApp(`/vehicles/${sprinter01.id}`)
+
+    const dialog = await screen.findByRole('dialog', { name: 'Sprinter 01' })
+    await waitFor(() => expect(document.title).toBe('Sprinter 01 · Panel floty'))
+    await user.click(within(dialog).getByRole('button', { name: 'Zamknij' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(document.title).toBe('Pojazdy · Panel floty')
   })
 
   it('switches to edit in the same dialog and back to details on Cancel', async () => {

@@ -25,6 +25,8 @@ export const LiveMapPage = () => {
   const positions = usePositions()
   const selectedVehicleId = useSelectedVehicleId()
   const now = useNow()
+  const hasNothingToTrack =
+    vehiclesQuery.isLoadingError || (vehiclesQuery.isSuccess && vehicles.length === 0)
 
   return (
     <Container className={styles.layout}>
@@ -33,11 +35,11 @@ export const LiveMapPage = () => {
           <h1 id={titleId} className={styles.title}>
             {t('map.title')}
           </h1>
-          <ConnectionIndicator status={status} onReconnect={reconnect} />
+          {!hasNothingToTrack && <ConnectionIndicator status={status} onReconnect={reconnect} />}
         </div>
         <div className={styles.listScroller}>
           {vehiclesQuery.isPending && <LoadingState />}
-          {vehiclesQuery.isError && (
+          {vehiclesQuery.isLoadingError && (
             <ErrorState
               title={t('map.loadError')}
               description={describeRequestError(t, vehiclesQuery.error)}

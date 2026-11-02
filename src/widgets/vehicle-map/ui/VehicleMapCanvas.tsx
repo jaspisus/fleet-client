@@ -36,9 +36,8 @@ const useFollowedVehicle = (selectedVehicleId: string | null) => {
   if (pause.selectedVehicleId !== selectedVehicleId) {
     setPause({ selectedVehicleId, paused: false })
   }
-  const paused = pause.selectedVehicleId === selectedVehicleId && pause.paused
   return {
-    followVehicleId: paused ? null : selectedVehicleId,
+    followVehicleId: pause.paused ? null : selectedVehicleId,
     pauseFollowing: () => setPause({ selectedVehicleId, paused: true }),
     resumeFollowing: () => setPause({ selectedVehicleId, paused: false }),
   }

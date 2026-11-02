@@ -60,6 +60,19 @@ test.describe('edit vehicle', () => {
     await expect(editLink).toBeFocused()
   })
 
+  test('does not reopen on Back after closing', async ({ page }) => {
+    await page.goto('/vehicles')
+    await page.getByRole('link', { name: 'Edytuj pojazd Sprinter 01' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Sprinter 01' })
+    await dialog.getByRole('button', { name: 'Anuluj' }).click()
+    await expect(dialog).toBeHidden()
+
+    await page.goBack()
+
+    await expect(page).toHaveURL('/vehicles')
+    await expect(dialog).toBeHidden()
+  })
+
   test('opens from a deep link', async ({ page }) => {
     await page.goto(EDIT_SPRINTER)
 

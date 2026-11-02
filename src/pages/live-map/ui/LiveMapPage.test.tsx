@@ -4,6 +4,7 @@ import type { Vehicle } from '@/entities/vehicle'
 import { useSelectionStore } from '@/features/select-vehicle'
 import {
   fakeConnections,
+  jsonResponse,
   position,
   problemResponse,
   renderWithProviders,
@@ -104,12 +105,22 @@ describe('LiveMapPage', () => {
     expect(fakeConnections).toHaveLength(2)
   })
 
-  it('explains a failed vehicle load', async () => {
+  it('explains a failed vehicle load, without a connection status', async () => {
     stubApi({ 'GET /api/vehicles': () => problemResponse(500) })
     renderWithProviders(<LiveMapPage />)
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Nie udało się wczytać listy pojazdów.',
     )
+    expect(screen.queryByText(/^Połączenie:/)).not.toBeInTheDocument()
+    expect(fakeConnections).toHaveLength(0)
+  })
+
+  it('shows no connection status for an empty fleet', async () => {
+    stubApi({ 'GET /api/vehicles': () => jsonResponse({ items: [], total: 0 }) })
+    renderWithProviders(<LiveMapPage />)
+
+    expect(await screen.findByText('Brak pojazdów do wyświetlenia.')).toBeInTheDocument()
+    expect(screen.queryByText(/^Połączenie:/)).not.toBeInTheDocument()
   })
 })

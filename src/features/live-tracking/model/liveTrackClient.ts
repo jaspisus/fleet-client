@@ -48,10 +48,11 @@ export const createLiveTrackClient = ({
   })
   connection.onreconnecting(() => report('reconnecting'))
   connection.onreconnected(() => {
-    report('live')
-    // A subscription belongs to the connection that made it.
-    // If renewing fails the connection is broken anyway; onclose reports it.
-    subscribe().catch(() => undefined)
+    // A subscription belongs to the connection that made it. On failure, stopping fires onclose.
+    subscribe().then(
+      () => report('live'),
+      () => void connection.stop(),
+    )
   })
   connection.onclose(() => report('disconnected'))
 

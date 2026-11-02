@@ -6,7 +6,7 @@ export interface Fleet {
   name: string
 }
 
-export const fetchFleets = (signal?: AbortSignal) =>
+const fetchFleets = (signal?: AbortSignal) =>
   apiRequest<ResourceCollection<Fleet>>('/api/fleets', { signal })
 
 export const fleetsQueryOptions = () =>

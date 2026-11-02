@@ -51,8 +51,26 @@ describe('createLiveTrackClient', () => {
     expect(onStatusChange).toHaveBeenLastCalledWith('reconnecting')
     connection.simulateReconnected()
 
-    expect(onStatusChange).toHaveBeenLastCalledWith('live')
-    await vi.waitFor(() => expect(connection.invoke).toHaveBeenCalledTimes(2))
+    expect(onStatusChange).toHaveBeenLastCalledWith('reconnecting')
+    await vi.waitFor(() => expect(onStatusChange).toHaveBeenLastCalledWith('live'))
+    expect(connection.invoke).toHaveBeenCalledTimes(2)
+  })
+
+  it('stops the connection if subscribing again after a reconnect fails', async () => {
+    const { client, connection, onStatusChange } = setup()
+    await client.start()
+    connection.invoke.mockRejectedValueOnce(new Error('hub error'))
+
+    connection.simulateReconnecting()
+    connection.simulateReconnected()
+
+    await vi.waitFor(() => expect(connection.stop).toHaveBeenCalled())
+    expect(onStatusChange.mock.calls.map(([status]) => status)).toEqual([
+      'connecting',
+      'live',
+      'reconnecting',
+      'disconnected',
+    ])
   })
 
   it('reports a lost connection', async () => {

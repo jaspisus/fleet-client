@@ -3,6 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
+  formatMakeModel,
   useVehicleLabels,
   VehicleTypeIcon,
   vehiclesQueryOptions,
@@ -98,7 +99,7 @@ const VehicleCell = ({ columnId, vehicle }: { columnId: VehicleColumnId; vehicle
     case 'registrationNumber':
       return <TruncatedText className={styles.plate} text={vehicle.registrationNumber} />
     case 'makeModel':
-      return <TruncatedText text={`${vehicle.manufacturer.name} ${vehicle.model.name}`} />
+      return <TruncatedText text={formatMakeModel(vehicle)} />
     case 'yearOfManufacture':
       return vehicle.yearOfManufacture
     case 'type':
@@ -133,8 +134,8 @@ export const VehiclesTable = ({ query, sort, onQueryChange, onSortChange }: Vehi
   const [revealAfterLoading] = useState(() => vehiclesQuery.isPending)
   const [loaderFinished, setLoaderFinished] = useState(() => !vehiclesQuery.isPending)
   const isLoading = vehiclesQuery.isPending || !loaderFinished
-  const isError = !isLoading && vehiclesQuery.isError
-  const isSuccess = !isLoading && vehiclesQuery.isSuccess
+  const isError = !isLoading && vehiclesQuery.isLoadingError
+  const isSuccess = !isLoading && vehiclesQuery.data !== undefined
   const table = useVehiclesTable({
     vehicles: vehiclesQuery.data?.items ?? NO_VEHICLES,
     query,

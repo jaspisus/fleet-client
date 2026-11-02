@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import { useState } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useSelectionStore } from '@/features/select-vehicle'
@@ -133,6 +133,23 @@ describe('VehiclesTable', () => {
     expect(vehicleNames()[0]).toBe('e-Transit Sopot')
   })
 
+  it('sorts by one column only: shift+click replaces the sort', async () => {
+    stubApi()
+    const onSortChange = vi.fn()
+    const { user } = renderWithProviders(<Harness onSortChange={onSortChange} />)
+    const nameHeader = await screen.findByRole('columnheader', { name: /Nazwa/ })
+    const yearHeader = screen.getByRole('columnheader', { name: /Rok/ })
+    await user.click(within(nameHeader).getByRole('button'))
+
+    await user.keyboard('{Shift>}')
+    await user.click(within(yearHeader).getByRole('button'))
+    await user.keyboard('{/Shift}')
+
+    expect(onSortChange).toHaveBeenLastCalledWith({ column: 'yearOfManufacture', desc: false })
+    expect(nameHeader).not.toHaveAttribute('aria-sort')
+    expect(yearHeader).toHaveAttribute('aria-sort', 'ascending')
+  })
+
   it('does not offer sorting by the actions column', async () => {
     stubApi()
     renderWithProviders(<Harness />)
@@ -184,6 +201,23 @@ describe('VehiclesTable', () => {
     await user.click(screen.getByRole('button', { name: 'Spróbuj ponownie' }))
 
     expect(await screen.findByText('1 pojazd')).toBeInTheDocument()
+  })
+
+  it('keeps the loaded table when a background refresh fails', async () => {
+    const api = stubApi()
+    const { queryClient } = renderWithProviders(<Harness />)
+    expect(await screen.findByText('4 pojazdy')).toBeInTheDocument()
+
+    api.routes['GET /api/vehicles'] = () => problemResponse(503)
+    await act(async () => {
+      await queryClient.refetchQueries()
+      // TanStack Query notifies observers on a timeout, so the failed state renders a tick later.
+      await new Promise((resolve) => setTimeout(resolve))
+    })
+
+    expect(screen.getByText('4 pojazdy')).toBeInTheDocument()
+    expect(screen.getByRole('table')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 })
 

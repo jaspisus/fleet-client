@@ -41,10 +41,10 @@ export const formatRelativeTime = (timestamp: number, now: number, language: Lan
   const elapsedSeconds = Math.max(0, Math.floor((now - timestamp) / 1000))
   const format = relativeTimeFormat(language)
   if (elapsedSeconds < JUST_NOW_SECONDS) return format.format(0, 'second')
-  for (const [unit, seconds] of RELATIVE_UNITS) {
-    if (elapsedSeconds >= seconds) return format.format(-Math.floor(elapsedSeconds / seconds), unit)
-  }
-  return format.format(0, 'second')
+  const [unit, seconds] = RELATIVE_UNITS.find(
+    ([, unitSeconds]) => elapsedSeconds >= unitSeconds,
+  ) ?? ['second', 1]
+  return format.format(-Math.floor(elapsedSeconds / seconds), unit)
 }
 
 export const formatDateTime = (timestamp: number, language: Language) =>

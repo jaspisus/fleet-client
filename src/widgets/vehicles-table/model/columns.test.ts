@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeSearchText, parseSortParam, toSortParam } from './columns'
+import { isSortableColumnId, normalizeSearchText, parseSortParam, toSortParam } from './columns'
 
 describe('sort URL parameter', () => {
   it.each([
@@ -16,6 +16,15 @@ describe('sort URL parameter', () => {
 
   it('serialises "no sort" as no parameter', () => {
     expect(toSortParam(undefined)).toBeUndefined()
+  })
+})
+
+describe('isSortableColumnId', () => {
+  it('accepts data columns only', () => {
+    expect(isSortableColumnId('name')).toBe(true)
+    expect(isSortableColumnId('makeModel')).toBe(true)
+    expect(isSortableColumnId('actions')).toBe(false)
+    expect(isSortableColumnId('unknown')).toBe(false)
   })
 })
 

@@ -2,12 +2,11 @@ import { type KeyboardEvent, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   changeLanguage,
-  DEFAULT_LANGUAGE,
   getLanguageFlag,
   getLanguageName,
-  isLanguage,
   type Language,
   LANGUAGES,
+  useLanguage,
 } from '@/shared/i18n'
 import { cx } from '@/shared/lib'
 import styles from './LanguageSwitcher.module.css'
@@ -22,8 +21,8 @@ const LanguageLabel = ({ language }: { language: Language }) => (
 )
 
 export const LanguageSwitcher = () => {
-  const { t, i18n } = useTranslation()
-  const current = isLanguage(i18n.resolvedLanguage) ? i18n.resolvedLanguage : DEFAULT_LANGUAGE
+  const { t } = useTranslation()
+  const current = useLanguage()
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const id = useId()
@@ -69,9 +68,6 @@ export const LanguageSwitcher = () => {
       case 'Escape':
         setOpen(false)
         break
-      case 'Tab':
-        // Let focus move on; blur closes the list.
-        return
       default:
         return
     }
