@@ -22,12 +22,14 @@ npm run test:e2e                                         # Playwright functional
 npx playwright test --project=e2e-desktop e2e/edit-vehicle.e2e.ts -g "deep link"
 npm run test:visual                                      # projects visual-390 … visual-2560, in Docker (must be running)
 npm run test:visual:update                               # re-record all baselines after an intended UI change
+npm run screenshots                                      # README screenshots → docs/screenshots/ (needs network for map tiles)
 npm run check                                            # lint, format:check, typecheck, test:coverage, test:e2e, test:visual
 ```
 
 - The first Playwright run needs `npx playwright install chromium`.
 - Pre-commit hook (`.githooks/pre-commit`, enabled by `prepare` via `core.hooksPath`): exports the index to a temp dir, links `node_modules` entry by entry (not `.tmp`/`.vite`, so tsc and Vite caches stay separate) and runs `CI=1 npm run check` there. So a commit fails while tests are out of date with the code; the user decides whether to use `--no-verify`, never add it on your own. On failure the temp dir with reports is kept.
 - Playwright builds `dist-e2e` with `--mode e2e` and serves it on port 4179. Locally it reuses a server that is already running there, which may still be serving an old build.
+- README screenshots come from `e2e/readme.screenshots.ts` (project `readme-screenshots`, exists only when `README_SCREENSHOTS` is set), not from the visual baselines. It uses the mocked API with the `realMap` fixture option, so the map loads the real OpenFreeMap style and tiles; it runs locally, not in Docker.
 - Visual tests run only in Docker: the `visual-*` projects exist only when `VISUAL_DOCKER` is set, which `scripts/test-visual-docker.sh` does. Baselines are `e2e/__screenshots__/<project>/<name>.png`, with no platform suffix.
 - The script uses the image tag matching the installed `@playwright/test`, keeps Linux `node_modules` in a Docker volume (`npm ci` reruns when `package-lock.json` changes) and mounts `e2e/support/fonts.conf`: without it the image renders `system-ui` with a CJK font that breaks Polish diacritics. The app fonts are self-hosted now, so it only matters for fallback text (e.g. before the woff2 loads).
 

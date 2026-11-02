@@ -20,4 +20,4 @@ Rules:
 - Edit only the parts the change affects; do not rewrite unrelated sections.
 - Keep each file's existing style: English, short sentences, the same heading and list structure.
 - Do not copy details between the files: README is for people, CLAUDE.md is for agents.
-- If a screenshot shown in README changes, re-record the baselines with `npm run test:visual:update`.
+- If a screen shown in README changes, re-take the README screenshots with `npm run screenshots`.

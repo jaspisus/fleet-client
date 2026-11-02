@@ -70,10 +70,12 @@ export class FleetApiMock {
       socket.send(frame({ type: INVOCATION, target: 'LiveTrack', arguments: [positions] }))
   }
 
-  async install() {
-    await this.page.route('https://tiles.openfreemap.org/**', (route) =>
-      route.fulfill({ json: MAP_STYLE }),
-    )
+  /** Installs the routes; with `realMap`, map styles and tiles come from OpenFreeMap. */
+  async install({ realMap = false } = {}) {
+    if (!realMap)
+      await this.page.route('https://tiles.openfreemap.org/**', (route) =>
+        route.fulfill({ json: MAP_STYLE }),
+      )
     await this.page.route(`${API_ORIGIN}/**`, (route) => this.handleHttp(route))
     await this.page.routeWebSocket(/^ws:\/\/fleet-api\.test\/tracking/, (socket) =>
       this.handleHub(socket),
