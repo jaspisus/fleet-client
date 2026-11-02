@@ -121,10 +121,12 @@ export const useAnimatedVehicles = ({
     container.addEventListener('pointerdown', press)
     window.addEventListener('pointerup', release)
     window.addEventListener('pointercancel', release)
+    window.addEventListener('blur', release)
     return () => {
       container.removeEventListener('pointerdown', press)
       window.removeEventListener('pointerup', release)
       window.removeEventListener('pointercancel', release)
+      window.removeEventListener('blur', release)
     }
   }, [map])
 

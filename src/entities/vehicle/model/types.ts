@@ -1,14 +1,14 @@
+import { isOneOf } from '@/shared/lib'
+
 export const VEHICLE_TYPES = ['Unknown', 'Car', 'Van', 'SmallRigidTruck', 'TractorTrailer'] as const
 export type VehicleType = (typeof VEHICLE_TYPES)[number]
 
 export const FUEL_TYPES = ['Diesel', 'Petrol', 'Electric', 'Hybrid', 'LPG', 'Other'] as const
 export type FuelType = (typeof FUEL_TYPES)[number]
 
-export const isVehicleType = (value: unknown): value is VehicleType =>
-  VEHICLE_TYPES.some((type) => type === value)
+export const isVehicleType = (value: unknown): value is VehicleType => isOneOf(VEHICLE_TYPES, value)
 
-export const isFuelType = (value: unknown): value is FuelType =>
-  FUEL_TYPES.some((type) => type === value)
+export const isFuelType = (value: unknown): value is FuelType => isOneOf(FUEL_TYPES, value)
 
 export interface EntityReference {
   id: string

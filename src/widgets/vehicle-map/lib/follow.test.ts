@@ -61,15 +61,21 @@ describe('followVehicle', () => {
     expect(map.jumpTo).not.toHaveBeenCalled()
   })
 
-  it.each([
-    ['the camera is moving', { moving: true }, false],
-    ['a pointer is down on the map', {}, true],
-  ])('waits while %s', (_, mapState, held) => {
-    const { map, instance } = fakeMap(mapState)
+  it('waits for the camera to stop moving, asking for another frame', () => {
+    const { map, instance } = fakeMap({ moving: true })
 
-    const again = followVehicle(instance, vehicle, { start: false, animate: true, held })
+    const again = followVehicle(instance, vehicle, { start: false, animate: true, held: false })
 
     expect(map.jumpTo).not.toHaveBeenCalled()
     expect(again).toBe(true)
+  })
+
+  it('waits while a pointer is down on the map, without asking for frames', () => {
+    const { map, instance } = fakeMap()
+
+    const again = followVehicle(instance, vehicle, { start: false, animate: true, held: true })
+
+    expect(map.jumpTo).not.toHaveBeenCalled()
+    expect(again).toBe(false)
   })
 })

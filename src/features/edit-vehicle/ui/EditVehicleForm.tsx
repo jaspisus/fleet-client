@@ -28,6 +28,11 @@ import styles from './EditVehicleForm.module.css'
 
 const fieldId = (name: VehicleFormField) => `vehicle-${name}`
 
+const toOption = ({ id, key }: { id: string; key: string }): SelectOption => ({
+  value: id,
+  label: key,
+})
+
 const withoutField = (errors: VehicleFormErrors, name: string): VehicleFormErrors =>
   Object.fromEntries(Object.entries(errors).filter(([field]) => field !== name))
 
@@ -118,13 +123,24 @@ export const EditVehicleForm = ({
     return clientError ? translate(clientError) : undefined
   }
 
+  /** The props every control takes from its field, as plain values. */
+  const controlProps = (field: AnyFieldApi) => {
+    const name = field.name as VehicleFormField
+    return {
+      id: fieldId(name),
+      label: t(`editVehicle.fields.${name}`),
+      value: field.state.value as string,
+      error: errorFor(field),
+      onChange: (value: string) => field.handleChange(value),
+      onBlur: field.handleBlur,
+    }
+  }
+
   const byLabel = (a: SelectOption, b: SelectOption) => compare(a.label, b.label)
-  const manufacturerOptions = dictionaries.vehicleManufacturer
-    .map(({ id, key }) => ({ value: id, label: key }))
-    .sort(byLabel)
+  const manufacturerOptions = dictionaries.vehicleManufacturer.map(toOption).sort(byLabel)
   const modelOptions = dictionaries.vehicleModels
     .filter((model) => model.manufacturerId === manufacturerId)
-    .map(({ id, key }) => ({ value: id, label: key }))
+    .map(toOption)
     .sort(byLabel)
   const typeOptions = dictionaries.vehicleType.map((type) => ({
     value: type,
@@ -158,28 +174,15 @@ export const EditVehicleForm = ({
         <form.Field name="name">
           {(field) => (
             <FormTextControl
-              id={fieldId('name')}
-              label={t('editVehicle.fields.name')}
-              value={field.state.value}
-              error={errorFor(field)}
+              {...controlProps(field)}
               maxLength={NAME_MAX_LENGTH}
               autoFocus={autoFocus && !readOnly}
-              onChange={field.handleChange}
-              onBlur={field.handleBlur}
             />
           )}
         </form.Field>
         <form.Field name="registrationNumber">
           {(field) => (
-            <FormTextControl
-              id={fieldId('registrationNumber')}
-              label={t('editVehicle.fields.registrationNumber')}
-              value={field.state.value}
-              error={errorFor(field)}
-              maxLength={REGISTRATION_NUMBER_MAX_LENGTH}
-              onChange={field.handleChange}
-              onBlur={field.handleBlur}
-            />
+            <FormTextControl {...controlProps(field)} maxLength={REGISTRATION_NUMBER_MAX_LENGTH} />
           )}
         </form.Field>
         <form.Field
@@ -188,24 +191,16 @@ export const EditVehicleForm = ({
         >
           {(field) => (
             <FormSelectControl
-              id={fieldId('manufacturerId')}
-              label={t('editVehicle.fields.manufacturerId')}
-              value={field.state.value}
-              error={errorFor(field)}
+              {...controlProps(field)}
               options={manufacturerOptions}
               emptyOption={{ label: t('editVehicle.selectPlaceholder'), selectable: false }}
-              onChange={field.handleChange}
-              onBlur={field.handleBlur}
             />
           )}
         </form.Field>
         <form.Field name="modelId">
           {(field) => (
             <FormSelectControl
-              id={fieldId('modelId')}
-              label={t('editVehicle.fields.modelId')}
-              value={field.state.value}
-              error={errorFor(field)}
+              {...controlProps(field)}
               options={modelOptions}
               emptyOption={{
                 label: t(
@@ -216,80 +211,51 @@ export const EditVehicleForm = ({
                 selectable: false,
               }}
               disabled={manufacturerId === ''}
-              onChange={field.handleChange}
-              onBlur={field.handleBlur}
             />
           )}
         </form.Field>
         <form.Field name="yearOfManufacture">
           {(field) => (
-            <FormTextControl
-              id={fieldId('yearOfManufacture')}
-              label={t('editVehicle.fields.yearOfManufacture')}
-              value={field.state.value}
-              error={errorFor(field)}
-              inputMode="numeric"
-              maxLength={4}
-              onChange={field.handleChange}
-              onBlur={field.handleBlur}
-            />
+            <FormTextControl {...controlProps(field)} inputMode="numeric" maxLength={4} />
           )}
         </form.Field>
         <form.Field name="type">
           {(field) => (
             <FormSelectControl
-              id={fieldId('type')}
-              label={t('editVehicle.fields.type')}
-              value={field.state.value}
-              error={errorFor(field)}
+              {...controlProps(field)}
               options={typeOptions}
               onChange={(value) => {
                 if (isVehicleType(value)) field.handleChange(value)
               }}
-              onBlur={field.handleBlur}
             />
           )}
         </form.Field>
         <form.Field name="fuelType">
           {(field) => (
             <FormSelectControl
-              id={fieldId('fuelType')}
-              label={t('editVehicle.fields.fuelType')}
-              value={field.state.value}
-              error={errorFor(field)}
+              {...controlProps(field)}
               options={fuelOptions}
               onChange={(value) => {
                 if (isFuelType(value)) field.handleChange(value)
               }}
-              onBlur={field.handleBlur}
             />
           )}
         </form.Field>
         <form.Field name="fleetId">
           {(field) => (
             <FormSelectControl
-              id={fieldId('fleetId')}
-              label={t('editVehicle.fields.fleetId')}
-              value={field.state.value}
-              error={errorFor(field)}
+              {...controlProps(field)}
               options={fleetOptions}
               emptyOption={{ label: t('editVehicle.selectPlaceholder'), selectable: false }}
-              onChange={field.handleChange}
-              onBlur={field.handleBlur}
             />
           )}
         </form.Field>
         <form.Field name="driverId">
           {(field) => (
             <FormSelectControl
-              id={fieldId('driverId')}
-              label={t('editVehicle.fields.driverId')}
-              value={field.state.value}
-              error={errorFor(field)}
+              {...controlProps(field)}
               options={driverOptions}
               emptyOption={{ label: t('editVehicle.noDriver'), selectable: true }}
-              onChange={field.handleChange}
-              onBlur={field.handleBlur}
             />
           )}
         </form.Field>

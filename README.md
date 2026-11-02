@@ -51,7 +51,7 @@ Skip it once with `git commit --no-verify`.
 ## Tests
 
 **Unit and component tests (Vitest + Testing Library, jsdom)** live next to the code (`*.test.ts(x)`):
-249 tests, about 92% statement coverage. They cover:
+274 tests, about 92% statement coverage. They cover:
 
 - pure logic: validation rules, mapping API messages, status, interpolation, URL state, formatting,
   repainting the basemap in the app palette, moving the camera with a followed vehicle;
@@ -63,7 +63,10 @@ Skip it once with `git commit --no-verify`.
   hold one open by hand), and the vehicle list's loading screen stays for its full duration
   (fake timers);
 - integration through the real route tree (`src/app/test/renderApp.tsx`), including the vehicle
-  dialog switching between details and edit without closing.
+  dialog switching between details and edit without closing, not reopening on Back, and the page
+  and dialog titles;
+- failed background refreshes: the table and an open edit form keep their data and edits;
+- the reconnect path of the live connection (status turns live only after a new subscription).
 
 The network is faked at the `fetch` level (`src/shared/test/fetchStub.ts`), so the real API client
 and error parsing run in every test. SignalR is replaced by a fake hub connection that tests drive
@@ -83,9 +86,9 @@ The clock is fixed and reduced motion is on, so runs are deterministic and scree
 
 - **Functional specs** (`*.e2e.ts`) cover:
   - the loading screen with motion on, then the table;
-  - sorting and searching in the URL;
+  - sorting and searching in the URL, and the header link clearing the search;
   - the whole edit flow: PUT body, server 400 errors on fields, 500 then retry, Esc, deep link,
-    focus trapped and restored;
+    focus trapped and restored, Back not reopening a closed dialog;
   - live updates;
   - selection in both directions (a fixture vehicle stands in the middle of the map, so a click on
     the canvas centre selects it);
@@ -115,7 +118,7 @@ no extra plugin).
 ```
 src/
   app/       entry point, providers, route tree, layout, global styles and design tokens
-  pages/     vehicles (table + dialog outlet), vehicle-edit (the dialog), live-map, errors
+  pages/     vehicles (table + dialog outlet), vehicle-dialog (details and edit), live-map, errors
   widgets/   vehicles-table, vehicle-map, tracking-list, app-header
   features/  edit-vehicle, live-tracking, select-vehicle, switch-language
   entities/  vehicle (incl. dictionaries), driver, fleet, vehicle-position
@@ -129,12 +132,13 @@ src/
   routing are enough.
 - **Server state in TanStack Query, client state in Zustand** (selected vehicle, live positions,
   toasts). Route loaders only start fetching, so navigation stays instant on a slow API; pages show
-  their own loading, error (with Retry) and empty states.
+  their own loading, error (with Retry) and empty states. A failed background refresh keeps the
+  data on screen.
 - **Table state in the URL** (`?q=…&sort=-name`): it survives the dialog, reloads and shared links.
   Search ignores case, spaces and Polish diacritics.
 - **Vehicle dialog driven by the route**: `/vehicles/$id` shows details (the form locked),
   `/vehicles/$id/edit` edits. Switching modes keeps the dialog open; Save and Cancel after Edit from
-  details go back to details. Built on the native `<dialog>` for the focus trap and Esc. It does not close on a backdrop click or while saving. It fades and slides in
+  details go back to details. Closing replaces the history entry, so Back does not reopen it. Built on the native `<dialog>` for the focus trap and Esc. It does not close on a backdrop click or while saving. It fades and slides in
   and out (not with reduced motion); the route changes only after the exit animation. Toasts
   animate the same way.
 - **Validation mirrors the API**: the same rules, including a unique plate and a model that belongs
@@ -143,8 +147,8 @@ src/
 - **Save waits for the server**: the UI waits for the response, and after a failure it keeps the
   edits so the user can retry.
 - **Live tracking only on the map page**, with automatic reconnect and a new subscription after
-  each reconnect, because a subscription belongs to its connection. Out-of-order positions are
-  ignored.
+  each reconnect, because a subscription belongs to its connection. The status turns live only
+  once that subscription succeeds. Out-of-order positions are ignored.
 - **Smooth markers**: each one moves between consecutive reports over the time between them,
   drawn straight into the MapLibre source; with reduced motion they jump instead.
 - **Dark map style** (OpenFreeMap *dark*, not *liberty*), repainted on load in the app palette, so

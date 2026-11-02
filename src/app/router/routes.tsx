@@ -16,7 +16,7 @@ import {
   vehiclesQueryOptions,
 } from '@/entities/vehicle'
 import { NotFoundPage, RouteErrorPage } from '@/pages/errors'
-import { VehicleEditDialog } from '@/pages/vehicle-edit'
+import { VehicleDialog } from '@/pages/vehicle-dialog'
 import { VehiclesPage, type VehiclesSearch } from '@/pages/vehicles'
 import { LoadingState } from '@/shared/ui'
 import { AppLayout } from '../layout/AppLayout'
@@ -86,9 +86,9 @@ const vehicleRoute = createRoute({
     // Edit opened from details pushed a history entry, so Save and Cancel go back to details.
     // Edit opened directly (the table, a deep link) closes the dialog instead.
     const [openedInDetails] = useState(!isEditing)
-    const close = () => void navigate({ to: '/vehicles', search: true })
+    const close = () => void navigate({ to: '/vehicles', search: true, replace: true })
     return (
-      <VehicleEditDialog
+      <VehicleDialog
         vehicleId={vehicleId}
         mode={isEditing ? 'edit' : 'view'}
         onClose={close}

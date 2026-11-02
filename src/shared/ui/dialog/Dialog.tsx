@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef, type ReactNode, type SyntheticEvent } from 'react'
+import { useEffect, useId, type ReactNode, type SyntheticEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { afterOwnAnimations } from '@/shared/lib'
+import { useExitAnimation } from '@/shared/lib'
 import styles from './Dialog.module.css'
 import { DialogCloseContext } from './DialogContext'
 
@@ -26,9 +26,8 @@ export const Dialog = ({
   children,
 }: DialogProps) => {
   const { t } = useTranslation()
-  const dialogRef = useRef<HTMLDialogElement>(null)
+  const { ref: dialogRef, requestExit: requestClose } = useExitAnimation<HTMLDialogElement>(onClose)
   const titleId = useId()
-  const isClosingRef = useRef(false)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -44,15 +43,7 @@ export const Dialog = ({
       dialog.close()
       if (opener?.isConnected) opener.focus()
     }
-  }, [])
-
-  const requestClose = () => {
-    const dialog = dialogRef.current
-    if (!dialog || isClosingRef.current) return
-    isClosingRef.current = true
-    dialog.dataset.closing = ''
-    afterOwnAnimations(dialog, onClose)
-  }
+  }, [dialogRef])
 
   const handleCancel = (event: SyntheticEvent<HTMLDialogElement>) => {
     event.preventDefault()

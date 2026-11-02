@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { changeLanguage, getLanguage, i18n, LANGUAGE_STORAGE_KEY } from './i18n'
+import { renderHook } from '@testing-library/react'
+import { act } from 'react'
+import { I18nextProvider } from 'react-i18next'
+import { changeLanguage, i18n, LANGUAGE_STORAGE_KEY } from './i18n'
 import { getIntlLocale, getMessages, LANGUAGES } from './languages'
 import { pl } from './locales/pl'
+import { useLanguage } from './useLanguage'
 
 const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/
 
@@ -45,16 +49,23 @@ describe('translations', () => {
   })
 })
 
+const renderUseLanguage = () =>
+  renderHook(useLanguage, {
+    wrapper: ({ children }) => <I18nextProvider i18n={i18n}>{children}</I18nextProvider>,
+  })
+
 describe('language', () => {
   it('is Polish by default', () => {
-    expect(getLanguage()).toBe('pl')
+    expect(renderUseLanguage().result.current).toBe('pl')
     expect(document.documentElement.lang).toBe('pl')
   })
 
   it('switches, sets <html lang> and remembers the choice', async () => {
-    await changeLanguage('en')
+    const { result } = renderUseLanguage()
 
-    expect(getLanguage()).toBe('en')
+    await act(() => changeLanguage('en'))
+
+    expect(result.current).toBe('en')
     expect(i18n.t('vehicles.count', { count: 2 })).toBe('2 vehicles')
     expect(document.documentElement.lang).toBe('en')
     expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe('en')

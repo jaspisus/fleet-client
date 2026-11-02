@@ -13,9 +13,9 @@ import {
   type SortingState,
   type Updater,
 } from '@tanstack/react-table'
-import { useVehicleLabels, type Vehicle } from '@/entities/vehicle'
+import { formatMakeModel, useVehicleLabels, type Vehicle } from '@/entities/vehicle'
 import { useFormatters } from '@/shared/i18n'
-import { normalizeSearchText, type VehicleSort } from './columns'
+import { isSortableColumnId, normalizeSearchText, type VehicleSort } from './columns'
 
 const features = tableFeatures({
   rowSortingFeature,
@@ -56,10 +56,7 @@ export const useVehiclesTable = ({
   const columns = columnHelper.columns([
     columnHelper.accessor('name', { id: 'name', ...sortText }),
     columnHelper.accessor('registrationNumber', { id: 'registrationNumber', ...sortText }),
-    columnHelper.accessor((vehicle) => `${vehicle.manufacturer.name} ${vehicle.model.name}`, {
-      id: 'makeModel',
-      ...sortText,
-    }),
+    columnHelper.accessor(formatMakeModel, { id: 'makeModel', ...sortText }),
     columnHelper.accessor('yearOfManufacture', { id: 'yearOfManufacture' }),
     columnHelper.accessor((vehicle) => labels.vehicleType(vehicle.type), {
       id: 'type',
@@ -78,7 +75,9 @@ export const useVehiclesTable = ({
 
   const handleSortingChange = (updater: Updater<SortingState>) => {
     const [next] = typeof updater === 'function' ? updater(sorting) : updater
-    onSortChange(next ? { column: next.id as VehicleSort['column'], desc: next.desc } : undefined)
+    onSortChange(
+      next && isSortableColumnId(next.id) ? { column: next.id, desc: next.desc } : undefined,
+    )
   }
 
   return useTable({
@@ -87,6 +86,7 @@ export const useVehiclesTable = ({
     data: vehicles,
     state: { sorting, globalFilter: query },
     onSortingChange: handleSortingChange,
+    enableMultiSort: false,
     // Every column starts ascending; by default numeric ones would start descending.
     sortDescFirst: false,
     globalFilterFn: includesSearchText,

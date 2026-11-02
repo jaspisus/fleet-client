@@ -1,1 +1,1 @@
-export { fetchFleets, fleetsQueryOptions, type Fleet } from './api'
+export { fleetsQueryOptions, type Fleet } from './api'

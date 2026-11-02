@@ -16,4 +16,18 @@ describe('useDocumentTitle', () => {
     unmount()
     expect(document.title).toBe('Before')
   })
+
+  it('leaves the title alone while disabled', () => {
+    document.title = 'Dialog · Fleet'
+    const { rerender } = renderHook(
+      ({ enabled }) => useDocumentTitle('Fleet', 'Vehicles', enabled),
+      {
+        initialProps: { enabled: false },
+      },
+    )
+    expect(document.title).toBe('Dialog · Fleet')
+
+    rerender({ enabled: true })
+    expect(document.title).toBe('Vehicles · Fleet')
+  })
 })

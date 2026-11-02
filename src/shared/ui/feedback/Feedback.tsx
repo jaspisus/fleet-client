@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cx } from '@/shared/lib'
 import { Button } from '../button/Button'
+import { VisuallyHidden } from '../layout/Layout'
 import styles from './Feedback.module.css'
 
 interface SpinnerProps {
@@ -12,7 +13,7 @@ interface SpinnerProps {
 export const Spinner = ({ label, className }: SpinnerProps) => (
   <span role="status" className={cx(styles.spinnerWrapper, className)}>
     <span className={styles.spinner} aria-hidden="true" />
-    <span className={styles.visuallyHidden}>{label}</span>
+    <VisuallyHidden>{label}</VisuallyHidden>
   </span>
 )
 

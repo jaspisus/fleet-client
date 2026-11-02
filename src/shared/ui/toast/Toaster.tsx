@@ -1,6 +1,6 @@
-import { useEffect, useEffectEvent, useRef } from 'react'
+import { useEffect, useEffectEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { afterOwnAnimations, cx } from '@/shared/lib'
+import { cx, useExitAnimation } from '@/shared/lib'
 import { useToastStore, type Toast } from './toastStore'
 import styles from './Toaster.module.css'
 
@@ -9,16 +9,9 @@ export const TOAST_DURATION_MS = 5_000
 const ToastItem = ({ toast }: { toast: Toast }) => {
   const { t } = useTranslation()
   const dismiss = useToastStore((state) => state.dismiss)
-  const itemRef = useRef<HTMLLIElement>(null)
-  const isClosingRef = useRef(false)
-
-  const requestDismiss = () => {
-    const item = itemRef.current
-    if (!item || isClosingRef.current) return
-    isClosingRef.current = true
-    item.dataset.closing = ''
-    afterOwnAnimations(item, () => dismiss(toast.id))
-  }
+  const { ref: itemRef, requestExit: requestDismiss } = useExitAnimation<HTMLLIElement>(() =>
+    dismiss(toast.id),
+  )
 
   const dismissOnTimeout = useEffectEvent(requestDismiss)
 

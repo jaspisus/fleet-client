@@ -8,7 +8,7 @@ export interface Driver {
   lastName: string
 }
 
-export const fetchDrivers = (signal?: AbortSignal) =>
+const fetchDrivers = (signal?: AbortSignal) =>
   apiRequest<ResourceCollection<Driver>>('/api/drivers', { signal })
 
 export const driversQueryOptions = () =>

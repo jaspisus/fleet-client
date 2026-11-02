@@ -1,5 +1,7 @@
 export { afterOwnAnimations } from './afterOwnAnimations'
 export { cx } from './cx'
+export { isOneOf } from './isOneOf'
 export { prefersReducedMotion, usePrefersReducedMotion } from './reducedMotion'
 export { useDocumentTitle } from './useDocumentTitle'
+export { useExitAnimation } from './useExitAnimation'
 export { useNow } from './useNow'

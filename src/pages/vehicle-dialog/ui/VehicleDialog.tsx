@@ -16,14 +16,19 @@ import { Button, Dialog, ErrorState, LoadingState, useCloseDialog } from '@/shar
 
 type VehicleDialogMode = 'view' | 'edit'
 
-interface VehicleEditContentProps {
+interface VehicleDialogContentProps {
   vehicleId: string
   mode: VehicleDialogMode
   autoFocus: boolean
   onEditEnd: (() => void) | undefined
 }
 
-const VehicleEditContent = ({ vehicleId, mode, autoFocus, onEditEnd }: VehicleEditContentProps) => {
+const VehicleDialogContent = ({
+  vehicleId,
+  mode,
+  autoFocus,
+  onEditEnd,
+}: VehicleDialogContentProps) => {
   const { t } = useTranslation()
   const closeDialog = useCloseDialog()
   const queryClient = useQueryClient()
@@ -37,14 +42,14 @@ const VehicleEditContent = ({ vehicleId, mode, autoFocus, onEditEnd }: VehicleEd
   if (isApiError(vehicleQuery.error) && vehicleQuery.error.status === 404)
     return <ErrorState title={t('editVehicle.notFound')} />
 
-  const failedQuery = queries.find((query) => query.isError)
+  const failedQuery = queries.find((query) => query.isLoadingError)
   if (failedQuery)
     return (
       <ErrorState
         title={t('editVehicle.loadError')}
         description={describeRequestError(t, failedQuery.error)}
         onRetry={() => {
-          for (const query of queries) if (query.isError) void query.refetch()
+          for (const query of queries) if (query.isLoadingError) void query.refetch()
         }}
       />
     )
@@ -75,7 +80,7 @@ const VehicleEditContent = ({ vehicleId, mode, autoFocus, onEditEnd }: VehicleEd
   )
 }
 
-interface VehicleEditDialogProps {
+interface VehicleDialogProps {
   vehicleId: string
   /** `view` shows the same form locked, without Save and Cancel, and with Edit in the header. */
   mode?: VehicleDialogMode
@@ -89,13 +94,13 @@ interface VehicleEditDialogProps {
  * Vehicle details and the edit form in a modal over the vehicle table, at /vehicles/$vehicleId
  * and /vehicles/$vehicleId/edit.
  */
-export const VehicleEditDialog = ({
+export const VehicleDialog = ({
   vehicleId,
   mode = 'edit',
   onClose,
   onEdit,
   onEditEnd,
-}: VehicleEditDialogProps) => {
+}: VehicleDialogProps) => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { data: vehicle } = useQuery(vehicleQueryOptions(vehicleId, queryClient))
@@ -128,7 +133,7 @@ export const VehicleEditDialog = ({
         )
       }
     >
-      <VehicleEditContent
+      <VehicleDialogContent
         vehicleId={vehicleId}
         mode={mode}
         autoFocus={modeChanged}

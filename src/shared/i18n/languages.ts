@@ -1,3 +1,4 @@
+import { isOneOf } from '@/shared/lib'
 import gbFlag from './flags/gb.svg'
 import plFlag from './flags/pl.svg'
 import { en } from './locales/en'
@@ -18,8 +19,7 @@ export type Language = keyof typeof LANGUAGE_REGISTRY
 export const LANGUAGES = Object.keys(LANGUAGE_REGISTRY) as Language[]
 export const DEFAULT_LANGUAGE: Language = 'pl'
 
-export const isLanguage = (value: unknown): value is Language =>
-  LANGUAGES.some((language) => language === value)
+export const isLanguage = (value: unknown): value is Language => isOneOf(LANGUAGES, value)
 
 /** The language's own name ("English", "Polski"), the same whatever the UI language is. */
 export const getLanguageName = (language: Language) => LANGUAGE_REGISTRY[language].name

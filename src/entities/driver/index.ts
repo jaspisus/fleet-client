@@ -1,1 +1,1 @@
-export { driversQueryOptions, fetchDrivers, type Driver } from './api'
+export { driversQueryOptions, type Driver } from './api'

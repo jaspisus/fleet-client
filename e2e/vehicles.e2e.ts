@@ -56,6 +56,20 @@ test.describe('vehicle table', () => {
     )
   })
 
+  test('clears the search from the header link', async ({ page }) => {
+    await page.goto('/vehicles?q=sprinter')
+    await expect(page.getByText('2 pojazdy')).toBeVisible()
+
+    await page
+      .getByRole('navigation', { name: 'Nawigacja główna' })
+      .getByRole('link', { name: 'Pojazdy' })
+      .click()
+
+    await expect(page).toHaveURL('/vehicles')
+    await expect(page.getByRole('searchbox')).toHaveValue('')
+    await expect(page.getByText('5 pojazdów')).toBeVisible()
+  })
+
   test('shows an error with a working retry', async ({ page, api }) => {
     let failures = 3 // the first load and its two automatic retries
     api.override('GET /api/vehicles', () =>

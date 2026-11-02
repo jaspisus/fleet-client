@@ -1,9 +1,9 @@
-import { Outlet } from '@tanstack/react-router'
-import { useState } from 'react'
+import { Outlet, useChildMatches } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { parseSortParam, toSortParam, VehiclesTable } from '@/widgets/vehicles-table'
 import { useDocumentTitle } from '@/shared/lib'
 import { Container } from '@/shared/ui'
+import { useSearchInput } from '../model/useSearchInput'
 import styles from './VehiclesPage.module.css'
 
 export interface VehiclesSearch {
@@ -18,15 +18,11 @@ interface VehiclesPageProps {
 
 export const VehiclesPage = ({ search, onSearchChange }: VehiclesPageProps) => {
   const { t } = useTranslation()
-  useDocumentTitle(t('app.name'), t('vehicles.title'))
-  // The input keeps its own state: URL updates are asynchronous, and typing must not lag behind.
-  // The URL only seeds it, which is enough because searching replaces the history entry.
-  const [query, setQuery] = useState(search.q ?? '')
+  const hasOpenDialog = useChildMatches({ select: (matches) => matches.length > 0 })
+  // A child effect runs before its parent's, so the dialog's title would be overwritten.
+  useDocumentTitle(t('app.name'), t('vehicles.title'), !hasOpenDialog)
 
-  const changeQuery = (value: string) => {
-    setQuery(value)
-    onSearchChange({ ...search, q: value || undefined })
-  }
+  const [query, changeQuery] = useSearchInput(search.q, (q) => onSearchChange({ ...search, q }))
 
   return (
     <Container className={styles.page}>
