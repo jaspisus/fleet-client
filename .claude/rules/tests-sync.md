@@ -16,6 +16,10 @@ update them, for example:
 
 > Tests not updated yet. Write **update tests** when the feature is done.
 
+Skip the reminder when the change cannot affect any test: no spec covers the changed code, and no
+screenshot shows it. Say that in one line instead, with the reason, e.g. "No tests affected: no
+fixture vehicle uses the Unknown type."
+
 When the user writes "update tests" (or otherwise says the feature is done):
 1. Update and add Vitest and Playwright tests for everything changed since the last test update.
 2. Run `npm run test:run`, `npm run test:e2e` and `npm run test:visual`.
@@ -25,4 +29,4 @@ When the user writes "update tests" (or otherwise says the feature is done):
 4. Update the README test summary (test count, coverage, what the specs cover). `docs-sync.md`
    still applies to all other docs after every change; only the test summary waits for this step.
 
-Until then, keep working without tests and repeat the reminder after every change.
+Until then, keep working without tests and repeat the reminder after every change that can affect tests.
